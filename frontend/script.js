@@ -11,7 +11,8 @@ let availableModels = {};
 // Fetch available models from our Orchestrator API
 async function fetchModels() {
     try {
-        const res = await fetch('http://localhost:8080/api/models');
+        const hostIp = window.location.hostname || "127.0.0.1";
+        const res = await fetch(`http://${hostIp}:8080/api/models`);
         availableModels = await res.json();
         renderModelHub();
     } catch(e) { console.error("Could not load Model definitions."); }
@@ -41,7 +42,7 @@ function renderModelHub() {
         card.innerHTML = `
             <h3>${model.name}</h3>
             <div class="metrics">
-                <span>CTX: ${(model.context/1000).toFixed(0)}k</span>
+                <span>CTX: ${(model.context ? model.context/1000 : 0).toFixed(0)}k</span>
                 <span>${model.speed}</span>
             </div>
             <p class="pros">✓ ${model.pros}</p>
