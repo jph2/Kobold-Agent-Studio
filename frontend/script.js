@@ -75,7 +75,8 @@ async function executeSummarizeAndSwap(targetModel) {
     });
 
     try {
-        const response = await fetch('http://localhost:5001/v1/chat/completions', {
+        const hostIp = window.location.hostname || "127.0.0.1";
+        const response = await fetch(`http://${hostIp}:5001/v1/chat/completions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -110,7 +111,8 @@ async function executeSummarizeAndSwap(targetModel) {
 
 function triggerBackendSwap(targetModel) {
     document.getElementById('model-indicator').innerHTML = `<span class="status-dot error"></span> Rebooting Engine...`;
-    fetch('http://localhost:8080/api/switch', {
+    const hostIp = window.location.hostname || "127.0.0.1";
+    fetch(`http://${hostIp}:8080/api/switch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model_id: targetModel.id })
@@ -123,7 +125,8 @@ function triggerBackendSwap(targetModel) {
 async function fetchModelInfo() {
     const modelBadge = document.getElementById('model-indicator');
     try {
-        const response = await fetch('http://localhost:5001/api/v1/model');
+        const hostIp = window.location.hostname || "127.0.0.1";
+        const response = await fetch(`http://${hostIp}:5001/api/v1/model`);
         if (response.ok) {
             const data = await response.json();
             // extract filename from path "C:/Kobald/Model.gguf"
@@ -141,11 +144,20 @@ async function fetchModelInfo() {
     }
 }
 
+let messages = [];
+try {
+    const rawData = localStorage.getItem('claw_chat_history');
+    if (rawData) {
+        messages = JSON.parse(rawData) || [];
+    }
+} catch(e) {
+    console.warn("Memory State Storage wurde manipuliert oder ist defekt. Chat-Historie wurde resettet.");
+    localStorage.removeItem('claw_chat_history');
+}
 
-let messages = JSON.parse(localStorage.getItem('claw_chat_history')) || [];
-
-// Configuration
-const KOBOLD_URL = 'http://localhost:5001/v1/chat/completions';
+// API Endpoints (Network Aware)
+const HOST_IP = window.location.hostname || "127.0.0.1";
+const KOBOLD_URL = `http://${HOST_IP}:5001/v1/chat/completions`;
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -176,8 +188,17 @@ function renderMessages() {
         
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${msg.role === 'user' ? 'user-msg' : 'bot-msg'}`;
-        msgDiv.innerHTML = marked.parse(msg.content);
+        // Convert Markdown to HTML securely (Basic XSS Sanitization)
+        let rawHtml = marked.parse(msg.content);
+        // 1. Strip raw script tags
+        rawHtml = rawHtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '[MALICIOUS SCRIPT TAG REMOVED]');
+        // 2. Strip inline event handlers (onerror=, onclick=, etc)
+        rawHtml = rawHtml.replace(/on\w+\s*=\s*"[^"]*"/gi, '');
+        rawHtml = rawHtml.replace(/on\w+\s*=\s*'[^']*'/gi, '');
         
+        msgDiv.innerHTML = rawHtml;
+        
+        // Create actions row (Edit, Delete, Regenerate)
         const actions = document.createElement('div');
         actions.className = 'msg-actions';
         
@@ -236,9 +257,34 @@ async function sendMessage() {
     const text = chatInput.value.trim();
     if (!text) return;
 
-    messages.push({ role: 'user', content: text });
+    let finalPrompt = text;
+    const webSearchToggle = document.getElementById('websearch-toggle');
+    
+    if (webSearchToggle && webSearchToggle.checked) {
+        document.getElementById('model-indicator').innerHTML = `<span class="status-dot error" style="background:var(--neon-blue);box-shadow:0 0 8px var(--neon-blue);"></span> Searching Web...`;
+        try {
+            const hostIp = window.location.hostname || "127.0.0.1";
+            const searchReq = await fetch(`http://${hostIp}:8080/api/search`, {
+                method: 'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({query: text})
+            });
+            if (searchReq.ok) {
+               const searchData = await searchReq.json();
+               if(searchData.results) {
+                   // Append the live search data stealthily to the prompt visualization
+                   finalPrompt += `\n\n> [!NOTE]\n> **Live Internet Data:** ${searchData.results}\n> *(Please use the data above to answer the primary query if relevant)*`;
+               }
+            }
+        } catch(e) {
+            console.error("Web Search Request failed or Orchestrator is disconnected.");
+        }
+        document.getElementById('model-indicator').innerHTML = `<span class="status-dot active"></span> Inference Engine`;
+    }
+
+    messages.push({ role: 'user', content: finalPrompt });
     chatInput.value = '';
-    chatInput.style.height = 'auto';
+    chatInput.style.height = 'auto'; // reset height
     renderMessages();
     
     await callApi();
@@ -315,15 +361,23 @@ function exportHistory() {
         alert("Chat is empty! Nothing to export.");
         return;
     }
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(messages, null, 2));
+    
+    let mdContent = "# 🧠 Memory State Export\n\n";
+    messages.forEach(m => {
+        let roleHeading = "System";
+        if (m.role === "user") roleHeading = "User";
+        if (m.role === "assistant") roleHeading = "Assistant";
+        mdContent += `## ${roleHeading}\n\n${m.content}\n\n`;
+    });
+    
+    const dataStr = "data:text/markdown;charset=utf-8," + encodeURIComponent(mdContent);
     const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("href", dataStr);
     
-    // Create a meaningful filename based on date and time
     const dateStr = new Date().toISOString().slice(0,19).replace(/:/g,"-");
-    downloadAnchorNode.setAttribute("download", `claw_chat_state_${dateStr}.json`);
+    downloadAnchorNode.setAttribute("download", `agent_memory_state_${dateStr}.md`);
     
-    document.body.appendChild(downloadAnchorNode); // required for firefox
+    document.body.appendChild(downloadAnchorNode); 
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
 }
@@ -335,20 +389,30 @@ function importHistory(event) {
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
-            const uploadedMessages = JSON.parse(e.target.result);
-            if (Array.isArray(uploadedMessages)) {
-                messages = uploadedMessages;
-                saveToLocal();
-                renderMessages();
-                alert(`Successfully imported ${messages.length} messages into context.`);
+            const content = e.target.result;
+            
+            if (file.name.endsWith('.json')) {
+                messages = JSON.parse(content);
             } else {
-                alert("Invalid file format. Expected a JSON array of messages.");
+                // Parse MD
+                let newMessages = [];
+                const blocks = content.split(/^## (System|User|Assistant)/m);
+                for (let i = 1; i < blocks.length; i += 2) {
+                    const roleName = blocks[i].toLowerCase();
+                    const msgContent = blocks[i+1].trim();
+                    newMessages.push({ role: roleName, content: msgContent });
+                }
+                if(newMessages.length === 0) throw new Error("Invalid MD Extracted Structure.");
+                messages = newMessages;
             }
+            
+            localStorage.setItem('claw_chat_history', JSON.stringify(messages)); // safe save strategy
+            renderMessages();
+            alert(`Successfully imported ${messages.length} messages into context.`);
         } catch (error) {
-            alert("Error parsing JSON file: " + error.message);
+            alert("Parsing Error. Ensure it is a valid Memory State Export (.md or .json).");
         }
-        // Reset file input so we can upload the same file again if needed
-        event.target.value = '';
+        event.target.value = ''; 
     };
     reader.readAsText(file);
 }
