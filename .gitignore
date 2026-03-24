@@ -12,3 +12,5 @@ venv/
 # Local configs
 config.json
 *.kcpps
+
+Chat-History/

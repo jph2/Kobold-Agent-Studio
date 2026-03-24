@@ -10,7 +10,7 @@ import threading
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
 LAUNCHERS_DIR = os.path.join(BASE_DIR, 'Launchers')
-CHAT_HISTORY_DIR = os.path.join(BASE_DIR, 'Chat-History')
+CHAT_HISTORY_DIR = r"C:\Kobold-Agent-Studio_LOCAL\Chat-History"
 
 if not os.path.exists(CHAT_HISTORY_DIR):
     os.makedirs(CHAT_HISTORY_DIR)
