@@ -62,15 +62,6 @@ MODELS = {
         "cons": "Heavy on the VRAM, slightly slower generation.",
         "bat": "START_Nemotron-30B-32k.bat"
     },
-    "NVIDIA_USDcode": {
-        "id": "NVIDIA_USDcode",
-        "name": "NVIDIA USDcode",
-        "context": 8192,
-        "speed": "Cloud ☁️",
-        "pros": "NVIDIA NIM specialized massive 70B parameter agent for official Universal Scene Description generation.",
-        "cons": "Requires active internet and valid NVIDIA NIM API Key credentials.",
-        "bat": "VIRTUAL_ENDPOINT"
-    },
     "Speed_Nemo-Mini-4B": {
         "id": "Speed_Nemo-Mini-4B",
         "name": "Nemotron-Mini 4B",
@@ -211,40 +202,6 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
             return
-
-        if self.path == '/api/usd_agent':
-            content_length = int(self.headers['Content-Length'])
-            req = json.loads(self.rfile.read(content_length).decode('utf-8'))
-            query = req.get('query', '')
-            try:
-                # E:\SynologyDrive\9999_LocalRepo\USDcodeNIM_MCP\scripts\nim_direct_client.py
-                # This script directly accesses the NVIDIA API using their NIM API Key.
-                nim_script_path = r"E:\SynologyDrive\9999_LocalRepo\USDcodeNIM_MCP\scripts\nim_direct_client.py"
-                
-                print(f"🟩 [NVIDIA USD AGENT] Routing to USDcodeNIM: {query[:30]}...")
-                
-                if not os.path.exists(nim_script_path):
-                    reply = r"Error: USDcodeNIM_MCP repository not found at E:\SynologyDrive\9999_LocalRepo\USDcodeNIM_MCP"
-                else:
-                    # Run it! It connects using httpx and writes raw stdout.
-                    proc = subprocess.run([sys.executable, nim_script_path, query], capture_output=True, text=True, timeout=120)
-                    if proc.returncode == 0:
-                        reply = proc.stdout
-                    else:
-                        reply = f"**USD Agent Output Error:**\n```\n{proc.stderr}\n```\nStdout: {proc.stdout}"
-            
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({"results": reply}).encode('utf-8'))
-                
-            except Exception as e:
-                self.send_response(500)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
-            return
-
         if self.path == '/api/switch':
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
@@ -261,14 +218,11 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
                 
                 # 2. Start new bat file
                 bat_path = MODELS[target_model].get('bat', '')
-                if bat_path == "VIRTUAL_ENDPOINT":
-                    print(f"2. Launching Virtual Endpoint: {target_model} (Local GPUs freed)")
-                else:
-                    full_bat_path = os.path.join(LAUNCHERS_DIR, bat_path)
-                    print(f"2. Launching new Model: {full_bat_path}")
-                    # Use subprocess to launch in detached mode
-                    # 'creationflags' is Windows only: 0x00000010 creates a new console window
-                    subprocess.Popen(f'cmd.exe /c "{full_bat_path}"', cwd=LAUNCHERS_DIR, creationflags=16)
+                full_bat_path = os.path.join(LAUNCHERS_DIR, bat_path)
+                print(f"2. Launching new Model: {full_bat_path}")
+                # Use subprocess to launch in detached mode
+                # 'creationflags' is Windows only: 0x00000010 creates a new console window
+                subprocess.Popen(f'cmd.exe /c "{full_bat_path}"', cwd=LAUNCHERS_DIR, creationflags=16)
                 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
