@@ -69,8 +69,11 @@ Dies ist die **standardmäßig eingebaute Benutzeroberfläche**, die tief in der
 ---
 
 ## 🧬 Core Stack Reference
-- **Engine**: [KoboldCPP](https://github.com/LostRuins/koboldcpp)
-- **Model**: [Nemotron-Cascade-2-30B-A3B-GGUF](https://huggingface.co/mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF)
+- **Recommended Models (Tested for 24GB VRAM):**
+  - 🧠 **Heavy Reasoning (24k Context):** [Nemotron-Cascade-2-30B-A3B (IQ4_XS)](https://huggingface.co/mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF)
+  - 📚 **Long Context (128k Context):** [Llama-3.1-8B-Instruct (Q8_0)](https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf)
+  - 💻 **Heavy Coding (128k Context):** [Qwen2.5-Coder-7B-Instruct (Q8_0)](https://huggingface.co/bartowski/Qwen2.5-Coder-7B-Instruct-GGUF/resolve/main/Qwen2.5-Coder-7B-Instruct-Q8_0.gguf)
+  - ⚡ **Speed RAG (4k Context):** [Nemotron-Mini-4B-Instruct (Q8_0)](https://huggingface.co/bartowski/Nemotron-Mini-4B-Instruct-GGUF/resolve/main/Nemotron-Mini-4B-Instruct-Q8_0.gguf)
 - **SDK**: Built with the modern **FastMCP** (SDK 1.x) for better stability/type support.
 - **Reference**: Inspired by [this tutorial](https://www.youtube.com/watch?v=H0IYyERZUyo).
 
