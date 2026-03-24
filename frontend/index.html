@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claw-Chat | Workspace 3090</title>
+    <title>Agent Studio | Workspace 3090</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <aside>
         <div class="header">
-            <h1>Kobold-Claw <span>MCP</span></h1>
+            <h1>Kobold Agent <span>Studio</span></h1>
             <div id="model-indicator" class="model-badge">
                 <span class="status-dot"></span> Loading Engine...
             </div>
@@ -19,7 +19,7 @@
         <div class="sidebar-section info-box" style="margin-top: 1rem;">
             <h3>💡 Hot-Swapping & Memory</h3>
             <p>Click a model card above to terminate the current AI and boot a new Engine.</p>
-            <p><strong>Your conversation is perfectly preserved.</strong> The new model seamlessly extracts and reconstructs the conversational context during boot.</p>
+            <p><strong>Your conversation is perfectly preserved.</strong> The Orchestrator seamlessly <strong>summarizes and condenses</strong> your conversational context during boot.</p>
         </div>
         
         <div class="context-gauge">
@@ -30,22 +30,14 @@
             <div class="usage-bar"><div class="usage-fill" id="usage-fill"></div></div>
         </div>
         
-        <div class="sidebar-section">
-            <h3 style="margin-bottom: 8px; font-size: 0.8rem; color: var(--text-secondary);">Memory States</h3>
-            <button class="action-btn" onclick="exportHistory()" style="width: 100%; margin-bottom: 5px; justify-content: center;">💾 Export Chat State</button>
-            <button class="action-btn" onclick="document.getElementById('import-file').click()" style="width: 100%; justify-content: center;">📂 Import Chat State</button>
-            <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importHistory(event)">
-        </div>
-        
-        <div class="settings-block" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-            <button onclick="clearAll()" class="action-btn" style="background: rgba(239, 68, 68, 0.1); color: var(--error-red); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); width: 100%; justify-content: center;">
-                Clear History 🗑️
-            </button>
-            <div class="config-item">
+        <!-- Inference Parameters Group -->
+        <div class="sidebar-section info-box" style="margin-top: 1.5rem; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--glass-border);">
+            <h3 style="margin-bottom: 12px; font-size: 0.85rem; color: var(--text-secondary);">Inference Parameters</h3>
+            <div class="config-item" style="margin-bottom: 8px;">
                 <label>Max Context</label>
                 <input type="number" id="max-context" value="32768" placeholder="e.g. 32768">
             </div>
-            <div class="config-item">
+            <div class="config-item" style="margin-bottom: 8px;">
                 <label>Temperature</label>
                 <input type="number" id="temp" step="0.1" value="0.7">
             </div>
@@ -53,6 +45,29 @@
                 <label>Max Response Tokens</label>
                 <input type="number" id="max-tokens" value="4096">
             </div>
+            <div style="margin-top: 15px; font-size: 0.75rem; color: rgba(255, 255, 255, 0.55); line-height: 1.5;">
+                <strong style="color:var(--text-primary)">Max Context:</strong> Setzt das harte Limit an Token, auf das das Modell im Speicher zurückschauen darf.<br>
+                <strong style="color:var(--text-primary)">Temperature:</strong> Steuert die KI-Kreativität (0.1 = strikt logisch, 0.8 = kreativ).<br>
+                <strong style="color:var(--text-primary)">Response Tokens:</strong> Die exakte Maximallänge der Bot-Antwort pro Vorgang.
+            </div>
+        </div>
+
+        <!-- Push remaining contents into the Danger Zone at the bottom -->
+        <div style="flex-grow: 1;"></div>
+
+        <!-- Memory States Export/Import -->
+        <div class="sidebar-section" style="margin-top: 1rem;">
+            <h3 style="margin-bottom: 8px; font-size: 0.8rem; color: var(--text-secondary);">Memory States</h3>
+            <button class="action-btn" onclick="exportHistory()" style="width: 100%; margin-bottom: 5px; justify-content: center;">💾 Export Chat State</button>
+            <button class="action-btn" onclick="document.getElementById('import-file').click()" style="width: 100%; justify-content: center;">📂 Import Chat State</button>
+            <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importHistory(event)">
+        </div>
+        
+        <!-- Danger Zone -->
+        <div class="settings-block" style="margin-top: 1rem; margin-bottom: 1rem;">
+            <button onclick="clearAll()" class="action-btn" style="background: rgba(239, 68, 68, 0.1); color: var(--error-red); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); width: 100%; justify-content: center; font-weight: 500;">
+                Clear History 🗑️
+            </button>
         </div>
 
         <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--glass-border); font-size: 0.7rem; color: var(--text-secondary);">
