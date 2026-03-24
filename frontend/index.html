@@ -9,14 +9,17 @@
 </head>
 <body>
     <aside>
-        <div class="header">
-            <h1>Kobold Agent <span>Studio</span></h1>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <div id="model-indicator" class="model-badge">
+        <div class="header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="display: flex; flex-direction: column;">
+                <h1>Kobold Agent <span>Studio</span></h1>
+                <div id="model-indicator" class="model-badge" style="margin-top: 5px;">
                     <span class="status-dot"></span> Loading Engine...
                 </div>
-                <button onclick="powerOffGPU()" class="action-btn" title="Free GPU VRAM (Global Killswitch)" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--error-red); padding: 5px 10px; font-size: 0.9rem;">🛑</button>
             </div>
+            
+            <button id="global-killswitch" onclick="powerOffGPU()" class="glossy-killswitch offline" title="Free GPU VRAM (Global Killswitch)">
+                Kill Switch
+            </button>
         </div>
         
         <div class="sidebar-section info-box" style="margin-top: 1rem;">
