@@ -9,10 +9,13 @@ This project is tailored for high-end local systems (like the NVIDIA RTX 3090 wi
 ## 🔥 Core Features
 
 * **🔌 KI Engine Hot-Swapping:** Seamlessly switch between specialized AI architectures with a single click in your browser (e.g., transition from deep *Nemotron-30B Reasoning* to massive *Qwen-7B Coder* repositories). The Python Orchestrator boots and unloads runtimes silently in the background.
-* **🧠 Memory Compression Protocol:** When a model's context capacity overflows before a transition, the application can trigger a highly dense LLM interaction to distill your massive chat history into an *"Inherited Memory Briefing"*. The subsequent model reads these compressed architectural specifications to seamlessly maintain context instead of truncating it!
-* **🛡️ Security & XSS Armor:** A fully hardened Web UI featuring DOM sanitizers against malicious script exploits from raw AI generations, alongside repaired, isolated `localStorage` caching.
-* **🤖 Autonomous Agent Routing (Skills):** External agent frameworks (like Cursor or OpenClaw) can utilize the dedicated `SKILL.md` to instruct the Orchestrator autonomously, booting up the appropriate "brain" for distinct code or analysis steps.
-* **💾 Memory State Export:** Backup and import valuable chat histories ("KV-Cache Mimicry") between different development sessions as compact `.json` files.
+* **🌐 Web Search (RAG):** Built-in DuckDuckGo Lite integration that automatically scrapes HTML, parses URLs, and injects live internet data discretely into the AI's context window.
+* **🛡️ Global Kill Switch & Auto-Timeout:** A beautiful, glossy Double-Click safety switch to instantly purge 24GB of VRAM across the network. Includes a 15-minute background auto-shutdown daemon to free the GPU for other family members.
+* **📝 Persistent Markdown Memory:** Chat logs are continuously auto-saved to the backend's `Chat-History/` folder as structured `.md` files, perfectly replicating commercial "Memory" mechanics.
+* **🌍 Network-Aware Architecture:** The frontend dynamically resolves IPs, allowing you to access and command your local AI datacenter from any PC or smartphone on your home Wi-Fi.
+* **🧠 Memory Compression Protocol:** When a model's context capacity overflows before a transition, the application can distill your massive chat history into an *"Inherited Memory Briefing"* for the next model to ingest.
+* **🦾 Security & XSS Armor:** A fully hardened Web UI featuring DOM sanitizers against malicious script exploits from raw AI generations.
+* **🤖 Autonomous Agent Routing:** External agent frameworks (like Cursor or OpenClaw) can utilize the dedicated `SKILL.md` to instruct the Orchestrator autonomously.
 * **⚡ Native Context Overrides:** Bypasses native 8k training limits to cram massive **128,000 Token Windows** straight into the 24GB VRAM of a 3090 consumer card!
 
 ---

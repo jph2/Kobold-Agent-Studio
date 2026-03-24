@@ -24,14 +24,22 @@ To create an "Agent-Ready", highly stable local LLM interface and MCP framework 
 - [x] **REQ:** Agents operating within the system must be able to switch models.
   - **Spec:** Created `Kobold_Model_Switching/SKILL.md`. Agents (Cursor, OpenClaw) can autonomously kill the Kobold process and execute `.bat` launchers to hot-swap to models with higher context dynamically.
 
-### 🎨 Advanced Human-in-the-Loop Web UI
-- [x] **REQ:** Persistent chat logs.
-  - **Spec:** Implemented `localStorage` state saving. Chat survives browser refreshes.
+### 📈 Advanced Human-in-the-Loop Web UI
+- [x] **REQ:** Persistent chat logs like commercial tools.
+  - **Spec:** The Javascript UI actively dumps the chat state to the orchestrator (`/api/save_history`), continuously synchronizing a formatted Markdown file (`.md`) to the `Chat-History/` directory on the server, avoiding data loss.
 - [x] **REQ:** Advanced prompt-engineering controls.
   - **Spec:** Added Edit, Delete, and Regenerate (Regenerate 🎲) buttons to individual messages.
 - [x] **REQ:** Live token tracking.
-  - **Spec:** Implemented a real-time visual "Context Gauge" to monitor token limits.
+  - **Spec:** Implemented a real-time visual "Context Gauge" to monitor strict token limits.
   - **Spec:** Live API pinging on `port 5001` to display the absolute current active model file.
+
+### 🌐 Network, Resource Management & RAG
+- [x] **REQ:** Let the AI search the web for real-time information to prevent hallucination.
+  - **Spec:** Created a server-side DuckDuckGo Web Scraper (`lite.duckduckgo.com`) using raw Python `urllib` to avoid heavy dependencies (`/api/search`). It safely parses URLs and Snippets and injects them as an invisible Markdown `[!NOTE]` for the LLM.
+- [x] **REQ:** Network-ready access and smart VRAM protection for family-shared networks.
+  - **Spec:** UI dynamically resolves host IPs globally across the Local Network instead of static `localhost`.
+  - **Spec:** Added an auto-shutdown monitor (`orchestrator.py`) that forcefully unloads the GPU after 15 minutes of inactivity (via `/api/ping` frontend heartbeats).
+  - **Spec:** Integrated a beautiful, glossy Double-Click **Global Kill Switch** in the UI header for emergency manual VRAM unloads.
 
 ### 🔄 Dynamic Hot-Swapping & Orchestration
 - [x] **REQ:** "KV-Cache Dumping" equivalent logic to carry context across models.
