@@ -5,6 +5,27 @@ const usageFill = document.getElementById('usage-fill');
 const usageText = document.getElementById('usage-text');
 const maxContextInput = document.getElementById('max-context');
 
+// Fetch the currently loaded model from Kobold API
+async function fetchModelInfo() {
+    const modelBadge = document.getElementById('model-indicator');
+    try {
+        const response = await fetch('http://localhost:5001/api/v1/model');
+        if (response.ok) {
+            const data = await response.json();
+            // extract filename from path "C:/Kobald/Model.gguf"
+            let modelPath = data.result || "Unknown Model";
+            let modelName = modelPath.split(/[/\\]/).pop().replace('.gguf', '');
+            
+            // Format nice display string
+            modelBadge.innerHTML = `<span class="status-dot active"></span> <span title="${modelPath}">${modelName}</span>`;
+        } else {
+            modelBadge.innerHTML = `<span class="status-dot error"></span> API Error`;
+        }
+    } catch (e) {
+        modelBadge.innerHTML = `<span class="status-dot error"></span> Offline`;
+    }
+}
+
 let messages = JSON.parse(localStorage.getItem('claw_chat_history')) || [];
 
 // Configuration
@@ -14,6 +35,20 @@ marked.setOptions({ breaks: true, gfm: true });
 
 function saveToLocal() {
     localStorage.setItem('claw_chat_history', JSON.stringify(messages));
+}
+
+function clearHistory() {
+    messages = [];
+    localStorage.removeItem('claw_chat_history');
+    renderMessages();
+}
+
+function updateContextGauge(usedTokens = 0) {
+    const max = parseInt(maxContextInput.value) || 32768;
+    const percent = Math.min(100, (usedTokens / max) * 100);
+    
+    usageFill.style.width = percent + '%';
+    usageText.textContent = `${usedTokens.toLocaleString()} / ${(max / 1024).toFixed(0)}k`;
 }
 
 function renderMessages() {
@@ -152,3 +187,7 @@ function clearAll() {
 
 // Initial render of history
 renderMessages();
+
+// Start pinging the engine to see what model is currently loaded
+fetchModelInfo();
+setInterval(fetchModelInfo, 5000);
