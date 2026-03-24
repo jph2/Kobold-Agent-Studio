@@ -160,7 +160,7 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
             import re
             
             try:
-                # Basic DDG html scrape (using lite.duckduckgo.com) to bypass heavy deps
+                # Basic DDG html scrape (using lite.duckduckgo.com)
                 data = urllib.parse.urlencode({'q': query}).encode('utf-8')
                 req_obj = urllib.request.Request(
                     'https://lite.duckduckgo.com/lite/',
@@ -171,18 +171,26 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
                     }
                 )
                 html = urllib.request.urlopen(req_obj, timeout=5).read().decode('utf-8')
+                chunks = html.split('class=\'result-snippet\'')
                 
-                # Extract snippets (DDG uses single or double quotes for class names sometimes)
-                snippets = re.findall(r'class=[\'"]result-snippet[\'"][^>]*>(.*?)</td>', html, re.IGNORECASE | re.DOTALL)
-                
-                # Clean HTML tags from snippet
                 results = []
-                for s in snippets[:3]:
-                    clean = re.sub('<[^<]+>', '', s).strip()
-                    if clean:
-                        results.append(clean)
+                for i in range(1, len(chunks)):
+                    snip_match = re.search(r'^[^>]*>(.*?)</td>', chunks[i], re.I | re.S)
+                    if not snip_match: continue
                     
-                context_str = " | ".join(results)
+                    snippet = re.sub('<[^<]+>', '', snip_match.group(1)).strip()
+                    
+                    url_match = re.findall(r'href=[\'"]([^\'"]+)[\'"][^>]*class=[\'"]?result-url', chunks[i-1], re.I)
+                    url = url_match[-1] if url_match else ""
+                    if url.startswith('/url?q='): url = url.replace('/url?q=', '')
+                    
+                    if snippet:
+                        if url:
+                            results.append(f"- Quelle: [{url}]({url}) | Auszug: {snippet}")
+                        else:
+                            results.append(f"- Auszug: {snippet}")
+                        
+                context_str = "\n".join(results[:5])
                 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')

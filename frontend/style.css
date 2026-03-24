@@ -214,3 +214,15 @@ textarea#chat-input { flex: 1; background: transparent; border: none; color: whi
 
 code { background: rgba(0,0,0,0.4); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
 pre code { display: block; padding: 1rem; overflow-x: auto; margin: 1rem 0; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; }
+
+/* Markdown Formatting within Messages */
+.message h1, .message h2, .message h3 { margin: 1.2rem 0 0.5rem 0; color: var(--text-primary); }
+.message h1:first-child, .message h2:first-child, .message h3:first-child { margin-top: 0; }
+.message ul, .message ol { margin: 0.8rem 0; padding-left: 20px; }
+.message li { margin-bottom: 0.4rem; line-height: 1.6; }
+.message p { margin-bottom: 0.8rem; }
+.message p:last-child { margin-bottom: 0; }
+.message blockquote { border-left: 4px solid var(--accent-color); margin: 1rem 0; padding: 0.5rem 1rem; background: rgba(59, 130, 246, 0.05); color: var(--text-secondary); font-style: italic; border-radius: 4px; }
+.message strong { color: var(--text-primary); font-weight: 700; }
+.message a { color: var(--neon-blue); text-decoration: none; font-weight: 500; text-shadow: 0 0 5px rgba(0, 212, 255, 0.3); }
+.message a:hover { text-decoration: underline; filter: brightness(1.2); }
