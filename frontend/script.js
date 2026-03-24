@@ -5,14 +5,19 @@ const usageFill = document.getElementById('usage-fill');
 const usageText = document.getElementById('usage-text');
 const maxContextInput = document.getElementById('max-context');
 
-let messages = [];
+let messages = JSON.parse(localStorage.getItem('claw_chat_history')) || [];
 
 // Configuration
 const KOBOLD_URL = 'http://localhost:5001/v1/chat/completions';
 
 marked.setOptions({ breaks: true, gfm: true });
 
+function saveToLocal() {
+    localStorage.setItem('claw_chat_history', JSON.stringify(messages));
+}
+
 function renderMessages() {
+    saveToLocal();
     chatContainer.innerHTML = '';
     messages.forEach((msg, index) => {
         const wrapper = document.createElement('div');
@@ -136,3 +141,14 @@ chatInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';
 });
+
+function clearAll() {
+    if (confirm('Delete ALL messages?')) {
+        messages = [];
+        saveToLocal();
+        renderMessages();
+    }
+}
+
+// Initial render of history
+renderMessages();

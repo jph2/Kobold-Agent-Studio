@@ -23,7 +23,10 @@
             </div>
         </div>
 
-        <div style="margin-top: 1.5rem;">
+        <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <button onclick="clearAll()" class="action-btn" style="background: rgba(239, 68, 68, 0.1); color: var(--error-red); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); width: 100%; justify-content: center;">
+                Clear History 🗑️
+            </button>
             <div class="config-item">
                 <label>Max Context</label>
                 <input type="number" id="max-context" value="32768" placeholder="e.g. 32768">

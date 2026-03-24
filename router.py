@@ -80,9 +80,12 @@ async def _post_chat(messages: list[dict[str, str]], temperature: float, max_tok
         "max_tokens": _clamp_max_tokens(max_tokens),
     }
 
-    async with httpx.AsyncClient(timeout=cfg["kobold_timeout"]) as client:
-        try:
-            response = await client.post(cfg["kobold_url"], json=payload)
+    url = cfg["kobold_url"]
+    timeout = cfg["kobold_timeout"]
+
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.post(url, json=payload)
             response.raise_for_status()
             result = response.json()
 
@@ -105,15 +108,17 @@ async def _post_chat(messages: list[dict[str, str]], temperature: float, max_tok
                     return joined
 
             return "Error: unexpected response format from local model (missing message content)."
-        except httpx.HTTPStatusError as e:
-            body = e.response.text[:1200] if e.response is not None else ""
-            return f"HTTP error from local model ({e.response.status_code}): {body}"
-        except httpx.RequestError as e:
-            return f"Connection error to local model ({type(e).__name__}): {e}"
-        except ValueError as e:
-            return f"Invalid JSON from local model ({type(e).__name__}): {e}"
-        except Exception as e:
-            return f"Unexpected error talking to local model ({type(e).__name__}): {e}"
+    except httpx.HTTPStatusError as e:
+        body = e.response.text[:1200] if e.response is not None else ""
+        return f"HTTP error from local model ({e.response.status_code}): {body}"
+    except httpx.RequestError as e:
+        return f"Connection error to local model ({type(e).__name__}): {e}"
+    except ValueError as e:
+        return f"Invalid JSON from local model ({type(e).__name__}): {e}"
+    except Exception as e:
+        return f"Unexpected error talking to local model ({type(e).__name__}): {e}"
+    
+    return "Error: Internal server error (no content generated)."
 
 
 @mcp.tool()
@@ -138,6 +143,7 @@ async def healthcheck() -> str:
             return f"HTTP error at {cfg['kobold_url']} ({e.response.status_code}): {body}"
         except Exception as e:
             return f"ERROR: endpoint unreachable at {cfg['kobold_url']} ({type(e).__name__}: {e})"
+    return f"ERROR: internal flow error at {cfg['kobold_url']}"
 
 
 @mcp.tool()
