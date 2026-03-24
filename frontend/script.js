@@ -277,9 +277,11 @@ function renderMessages() {
         actions.className = 'msg-actions';
         
         let regenBtn = (msg.role === 'assistant') ? `<button class="action-btn" onclick="regenerateFrom(${index})">Regenerate 🎲</button>` : '';
+        let resendBtn = (msg.role === 'user') ? `<button class="action-btn" onclick="resendFrom(${index})">Resend 🚀</button>` : '';
         
         actions.innerHTML = `
             ${regenBtn}
+            ${resendBtn}
             <button class="action-btn" onclick="startEdit(${index})">Edit</button>
             <button class="action-btn" onclick="deleteMsg(${index})" style="color:rgba(255,255,255,0.3)">Del</button>
         `;
@@ -299,6 +301,7 @@ function startEdit(index) {
     msgDiv.innerHTML = `<textarea class="edit-area" id="edit-area-${index}">${originalText}</textarea>
                         <div style="margin-top: 5px; display: flex; gap: 10px;">
                             <button class="action-btn" style="color:var(--neon-blue)" onclick="saveEdit(${index})">Save</button>
+                            <button class="action-btn" style="color:var(--neon-blue)" onclick="saveAndResend(${index})">Save & Resend</button>
                             <button class="action-btn" onclick="renderMessages()">Cancel</button>
                         </div>`;
     
@@ -312,9 +315,30 @@ function saveEdit(index) {
     renderMessages();
 }
 
-function deleteMsg(index) {
-    messages.splice(index, 1);
+async function saveAndResend(index) {
+    const newText = document.getElementById(`edit-area-${index}`).value;
+    messages[index].content = newText;
+    // Remove all messages after this one so the conversation branches from here
+    messages = messages.slice(0, index + 1);
     renderMessages();
+    await callApi();
+}
+
+async function deleteMsg(index) {
+    // Truncate the chat, removing this message and everything after it
+    messages = messages.slice(0, index);
+    renderMessages();
+    // Restart automatically from this point if there is history left
+    if (messages.length > 0) {
+        await callApi();
+    }
+}
+
+async function resendFrom(index) {
+    // Keep this user message, drop everything after it, and trigger API
+    messages = messages.slice(0, index + 1);
+    renderMessages();
+    await callApi();
 }
 
 async function regenerateFrom(index) {
