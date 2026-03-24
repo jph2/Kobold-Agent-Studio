@@ -191,3 +191,47 @@ renderMessages();
 // Start pinging the engine to see what model is currently loaded
 fetchModelInfo();
 setInterval(fetchModelInfo, 5000);
+
+// --- Export & Import Chat States ---
+function exportHistory() {
+    if (messages.length === 0) {
+        alert("Chat is empty! Nothing to export.");
+        return;
+    }
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(messages, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    
+    // Create a meaningful filename based on date and time
+    const dateStr = new Date().toISOString().slice(0,19).replace(/:/g,"-");
+    downloadAnchorNode.setAttribute("download", `claw_chat_state_${dateStr}.json`);
+    
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+
+function importHistory(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const uploadedMessages = JSON.parse(e.target.result);
+            if (Array.isArray(uploadedMessages)) {
+                messages = uploadedMessages;
+                saveToLocal();
+                renderMessages();
+                alert(`Successfully imported ${messages.length} messages into context.`);
+            } else {
+                alert("Invalid file format. Expected a JSON array of messages.");
+            }
+        } catch (error) {
+            alert("Error parsing JSON file: " + error.message);
+        }
+        // Reset file input so we can upload the same file again if needed
+        event.target.value = '';
+    };
+    reader.readAsText(file);
+}

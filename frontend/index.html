@@ -16,17 +16,22 @@
             </div>
         </div>
         
-        <div class="progress-container">
-            <div class="progress-label">
+        <div class="context-gauge">
+            <div class="gauge-label">
                 <span>Context Usage</span>
-                <span id="usage-text">0 / 32k</span>
+                <span id="usage-text">0 / 0k</span>
             </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="usage-fill" style="width: 0%"></div>
-            </div>
+            <div class="usage-bar"><div class="usage-fill" id="usage-fill"></div></div>
         </div>
-
-        <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        
+        <div class="sidebar-section">
+            <h3 style="margin-bottom: 8px; font-size: 0.8rem; color: var(--text-secondary);">Memory States</h3>
+            <button class="action-btn" onclick="exportHistory()" style="width: 100%; margin-bottom: 5px; justify-content: center;">💾 Export Chat State</button>
+            <button class="action-btn" onclick="document.getElementById('import-file').click()" style="width: 100%; justify-content: center;">📂 Import Chat State</button>
+            <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importHistory(event)">
+        </div>
+        
+        <div class="settings-block" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
             <button onclick="clearAll()" class="action-btn" style="background: rgba(239, 68, 68, 0.1); color: var(--error-red); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); width: 100%; justify-content: center;">
                 Clear History 🗑️
             </button>
