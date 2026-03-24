@@ -57,9 +57,15 @@
                 <label>Max Response Tokens</label>
                 <input type="number" id="max-tokens" value="4096">
             </div>
-            <div class="config-item" style="margin-top: 10px; align-items: center; justify-content: flex-start;">
-                <input type="checkbox" id="websearch-toggle" style="width:auto; margin-right: 8px;">
-                <label for="websearch-toggle" style="margin:0;">Enable Web Search 🌐</label>
+            <div class="config-item" style="margin-top: 10px; align-items: center; justify-content: flex-start; gap: 15px; display: flex;">
+                <label style="margin:0; display:flex; align-items:center;">
+                    <input type="checkbox" id="websearch-toggle" style="width:auto; margin-right: 8px;">
+                    Enable Web Search 🌐
+                </label>
+                <label style="margin:0; display:flex; align-items:center; color: #76b900;">
+                    <input type="checkbox" id="usd-agent-toggle" style="width:auto; margin-right: 8px;">
+                    NVIDIA USD Agent 🟩
+                </label>
             </div>
             <div style="margin-top: 15px; font-size: 0.75rem; color: rgba(255, 255, 255, 0.55); line-height: 1.5;">
                 <strong style="color:var(--text-primary)">Max Context:</strong> Sets the hard token limit defining how far back the model can look in memory.<br>

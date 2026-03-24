@@ -345,7 +345,46 @@ async function sendMessage() {
     chatInput.style.height = 'auto'; // reset height
     renderMessages();
     
-    await callApi();
+    const usdToggle = document.getElementById('usd-agent-toggle');
+    if (usdToggle && usdToggle.checked) {
+        await callUsdNimApi(text);
+    } else {
+        await callApi();
+    }
+}
+
+async function callUsdNimApi(query) {
+    const botIndex = messages.length;
+    messages.push({ role: 'assistant', content: '<span style="color:#76b900">NVIDIA NIM (USDcode) 🟩</span> is thinking...' });
+    renderMessages();
+
+    try {
+        const hostIp = window.location.hostname || "127.0.0.1";
+        const response = await fetch(`http://${hostIp}:8080/api/usd_agent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query })
+        });
+        
+        let reply = "";
+        if (response.ok) {
+            const data = await response.json();
+            reply = data.results || "USD Agent returned an empty response.";
+        } else {
+            reply = "USD Agent Error: Endpoint unreachable or failed.";
+        }
+        
+        messages[botIndex] = { role: 'assistant', content: reply };
+        
+        // NIM doesn't use local tokens, just flash usage bar
+        const usageFill = document.getElementById('usage-fill');
+        if(usageFill) { usageFill.style.background = "linear-gradient(90deg, #76b900, #40e0d0)"; }
+        
+        renderMessages();
+    } catch (e) {
+        messages[botIndex] = { role: 'assistant', content: `<span style="color:var(--error-red)">USD Agent Error: ${e.message}</span>` };
+        renderMessages();
+    }
 }
 
 async function callApi() {

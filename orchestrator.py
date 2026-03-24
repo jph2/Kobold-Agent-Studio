@@ -203,6 +203,42 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
             return
 
+        if self.path == '/api/usd_agent':
+            content_length = int(self.headers['Content-Length'])
+            req = json.loads(self.rfile.read(content_length).decode('utf-8'))
+            query = req.get('query', '')
+            
+            import subprocess
+            import sys
+            try:
+                # E:\SynologyDrive\9999_LocalRepo\USDcodeNIM_MCP\scripts\nim_direct_client.py
+                # This script directly accesses the NVIDIA API using their NIM API Key.
+                nim_script_path = r"E:\SynologyDrive\9999_LocalRepo\USDcodeNIM_MCP\scripts\nim_direct_client.py"
+                
+                print(f"🟩 [NVIDIA USD AGENT] Routing to USDcodeNIM: {query[:30]}...")
+                
+                if not os.path.exists(nim_script_path):
+                    reply = "Error: USDcodeNIM_MCP repository not found at E:\SynologyDrive\9999_LocalRepo\USDcodeNIM_MCP"
+                else:
+                    # Run it! It connects using httpx and writes raw stdout.
+                    proc = subprocess.run([sys.executable, nim_script_path, query], capture_output=True, text=True, timeout=120)
+                    if proc.returncode == 0:
+                        reply = proc.stdout
+                    else:
+                        reply = f"**USD Agent Output Error:**\n```\n{proc.stderr}\n```\nStdout: {proc.stdout}"
+            
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"results": reply}).encode('utf-8'))
+                
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
+            return
+
         if self.path == '/api/switch':
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
