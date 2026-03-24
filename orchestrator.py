@@ -2,6 +2,7 @@ import os
 import json
 import subprocess
 import time
+import sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 
@@ -215,9 +216,6 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
             content_length = int(self.headers['Content-Length'])
             req = json.loads(self.rfile.read(content_length).decode('utf-8'))
             query = req.get('query', '')
-            
-            import subprocess
-            import sys
             try:
                 # E:\SynologyDrive\9999_LocalRepo\USDcodeNIM_MCP\scripts\nim_direct_client.py
                 # This script directly accesses the NVIDIA API using their NIM API Key.
