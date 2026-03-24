@@ -7,6 +7,7 @@ const maxContextInput = document.getElementById('max-context');
 
 // Global model registry from Orchestrator
 let availableModels = {};
+let isSwitching = false;
 
 // Fetch available models from our Orchestrator API
 async function fetchModels() {
@@ -53,6 +54,8 @@ function renderModelHub() {
 }
 
 function confirmModelSwitch(model) {
+    if (isSwitching) return; // Prevent double-click disasters
+    
     const activeText = document.getElementById('model-indicator').innerText.toLowerCase();
     if(activeText.includes(model.name.split(' ')[0].toLowerCase())) {
         alert("This model is currently running!");
@@ -67,8 +70,10 @@ function confirmModelSwitch(model) {
     }
 
     if (wantsSummary) {
+        isSwitching = true;
         executeSummarizeAndSwap(model);
     } else {
+        isSwitching = true;
         triggerBackendSwap(model);
     }
 }
@@ -134,9 +139,15 @@ function triggerBackendSwap(targetModel) {
         body: JSON.stringify({ model_id: targetModel.id })
     }).then(() => {
         if (targetModel.id === "NVIDIA_USDcode") {
-            setTimeout(fetchModelInfo, 2000); // UI reflects switch immediately
+            setTimeout(() => {
+                isSwitching = false;
+                fetchModelInfo();
+            }, 2000); // UI reflects switch immediately
         } else {
-            setTimeout(renderModelHub, 15000); // GGUF takes 15 secs
+            setTimeout(() => {
+                isSwitching = false;
+                renderModelHub();
+            }, 15000); // GGUF takes 15 secs
         }
     });
 }

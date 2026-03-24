@@ -1,0 +1,9 @@
+E:\SynologyDrive\9999_LocalRepo\Kobold-Claw-Link-MCP\frontend\script.js:549
+
+
+
+SyntaxError: Unexpected end of input
+    at wrapSafe (node:internal/modules/cjs/loader:1378:20)
+    at checkSyntax (node:internal/main/check_syntax:78:3)
+
+Node.js v20.17.0
