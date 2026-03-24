@@ -373,6 +373,7 @@ async function sendMessage() {
         } catch(e) {
             console.error("Web Search Request failed or Orchestrator is disconnected.");
         }
+    }
     messages.push({ role: 'user', content: finalPrompt });
     chatInput.value = '';
     chatInput.style.height = 'auto'; // reset height
