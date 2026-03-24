@@ -90,3 +90,8 @@ It currently just gives a cleaner connector surface.
 - structured diagnostic logging
 - optional retries for transient failures
 - real routing once multiple local targets or profiles matter
+
+## Core Stack Reference
+- **Engine**: [KoboldCPP v1.110](https://github.com/LostRuins/koboldcpp/releases/tag/v1.110)
+- **Model**: [mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF (IQ4_XS)](https://huggingface.co/mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF/tree/main)
+- **Original Inspiration**: [Expanding Antigravity LLM catalog with Local Models (YouTube)](https://www.youtube.com/watch?v=H0IYyERZUyo)
