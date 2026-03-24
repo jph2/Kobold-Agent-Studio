@@ -91,6 +91,18 @@ It currently just gives a cleaner connector surface.
 - optional retries for transient failures
 - real routing once multiple local targets or profiles matter
 
+## Web Interface (Internal Control Dashboard)
+You can now also chat with your 3090 directly via a beautiful browser interface.
+
+### Launching the Dashboard:
+1. Run a simple local server:
+   ```bash
+   python -m http.server 8080 --directory frontend
+   ```
+2. Open **`http://localhost:8080`** in your browser.
+
+*Note: Ensure KoboldCpp is started with `--corsorigin *` for the browser to communicate with the API.*
+
 ## Core Stack Reference
 - **Engine**: [KoboldCPP v1.110](https://github.com/LostRuins/koboldcpp/releases/tag/v1.110)
 - **Model**: [mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF (IQ4_XS)](https://huggingface.co/mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF/tree/main)

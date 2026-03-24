@@ -3,7 +3,7 @@ from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
 import httpx
-from mcp.server.fast import FastMCP
+from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("Kobold-Claw-Link-MCP")
 
