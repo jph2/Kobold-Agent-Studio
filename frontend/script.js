@@ -5,6 +5,74 @@ const usageFill = document.getElementById('usage-fill');
 const usageText = document.getElementById('usage-text');
 const maxContextInput = document.getElementById('max-context');
 
+// Global model registry from Orchestrator
+let availableModels = {};
+
+// Fetch available models from our Orchestrator API
+async function fetchModels() {
+    try {
+        const res = await fetch('http://localhost:8080/api/models');
+        availableModels = await res.json();
+        renderModelHub();
+    } catch(e) { console.error("Could not load Model definitions."); }
+}
+
+function renderModelHub() {
+    const hub = document.getElementById('model-hub');
+    hub.innerHTML = '';
+    
+    // figure out which one is active by checking the model-indicator text
+    const activeText = document.getElementById('model-indicator').innerText.toLowerCase();
+    
+    Object.values(availableModels).forEach(model => {
+        const isActive = activeText.includes(model.name.split(' ')[0].toLowerCase());
+        const card = document.createElement('div');
+        card.className = `model-card ${isActive ? 'active' : ''}`;
+        card.onclick = () => confirmModelSwitch(model);
+        
+        card.innerHTML = `
+            <h3>${model.name}</h3>
+            <div class="metrics">
+                <span>CTX: ${(model.context/1000).toFixed(0)}k</span>
+                <span>${model.speed}</span>
+            </div>
+            <p class="pros">✓ ${model.pros}</p>
+            <p class="cons">✗ ${model.cons}</p>
+        `;
+        hub.appendChild(card);
+    });
+}
+
+function confirmModelSwitch(model) {
+    const activeText = document.getElementById('model-indicator').innerText.toLowerCase();
+    if(activeText.includes(model.name.split(' ')[0].toLowerCase())) {
+        alert("This model is currently running!");
+        return;
+    }
+    
+    // Determine current token count rough estimate
+    const currentTokensStr = document.getElementById('usage-text').innerText.split(' / ')[0].replace(/,/g, '');
+    const currentTokens = parseInt(currentTokensStr) || 0;
+    
+    if (currentTokens > model.context) {
+        const confirmSwitch = confirm(`⚠️ WARNING: Context Overflow!\n\nYour current chat history is ~${currentTokens.toLocaleString()} tokens.\nThe new model (${model.name}) only supports a maximum of ${model.context.toLocaleString()} tokens.\n\nIf you proceed, the older parts of the conversation will be completely ignored by the new model (truncation). Do you wish to continue switching?`);
+        if (!confirmSwitch) return;
+    } else {
+        const confirmNormal = confirm(`Switching the Engine to ${model.name} will terminate the current AI process and boot a new one. This takes roughly 15-20 seconds.\n\nReady to hot-swap?`);
+        if(!confirmNormal) return;
+    }
+    
+    // User agreed, trigger backend
+    fetch('http://localhost:8080/api/switch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model_id: model.id })
+    }).then(() => {
+        document.getElementById('model-indicator').innerHTML = `<span class="status-dot error"></span> Rebooting Engine...`;
+        setTimeout(renderModelHub, 15000); // refresh UI in 15 seconds
+    });
+}
+
 // Fetch the currently loaded model from Kobold API
 async function fetchModelInfo() {
     const modelBadge = document.getElementById('model-indicator');
@@ -18,6 +86,7 @@ async function fetchModelInfo() {
             
             // Format nice display string
             modelBadge.innerHTML = `<span class="status-dot active"></span> <span title="${modelPath}">${modelName}</span>`;
+            if(Object.keys(availableModels).length > 0) renderModelHub();
         } else {
             modelBadge.innerHTML = `<span class="status-dot error"></span> API Error`;
         }
@@ -25,6 +94,7 @@ async function fetchModelInfo() {
         modelBadge.innerHTML = `<span class="status-dot error"></span> Offline`;
     }
 }
+
 
 let messages = JSON.parse(localStorage.getItem('claw_chat_history')) || [];
 
@@ -189,6 +259,7 @@ function clearAll() {
 renderMessages();
 
 // Start pinging the engine to see what model is currently loaded
+fetchModels();
 fetchModelInfo();
 setInterval(fetchModelInfo, 5000);
 

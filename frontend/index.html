@@ -49,14 +49,21 @@
             </div>
         </div>
 
+        <div class="sidebar-section info-box">
+            <h3>💡 Hot-Swapping & Memory</h3>
+            <p>Click a model card above to terminate the current AI and boot a new Engine.</p>
+            <p><strong>Your conversation is perfectly preserved.</strong> The new model seamlessly extracts and reconstructs the conversational context during boot.</p>
+        </div>
+
         <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--glass-border); font-size: 0.7rem; color: var(--text-secondary);">
             Connector v1.1.0-beta<br>
             Powered by RTX 3090
         </div>
     </aside>
 
-    <main>
-        <div id="chat-container">
+    <div class="main-content">
+        <div id="model-hub" class="model-hub-grid"></div>
+        <div class="chat-container" id="chat-container">
             <!-- Messages will be rendered here dynamically -->
         </div>
 
