@@ -51,12 +51,20 @@ Add this to your `mcp_config.json` (usually in `~/.gemini/antigravity/`):
 
 ---
 
-## 🖥️ Web Interface (Claw-Chat Dashboard)
-A sleek, glassmorphism-style web frontend is included in the `/frontend` directory for direct model interaction via browser.
+## 🖥️ Web Interfaces (Port 8080 vs Port 5001)
 
-**To Launch:**
-1. Start a local server: `python -m http.server 8080 --directory frontend`
-2. Access at: **`http://localhost:8080`**
+Es gibt **zwei völlig unterschiedliche Web-Interfaces**, je nachdem, welchen Port Sie aufrufen. **Port 8080 ist das empfohlene Custom-Interface.**
+
+### 🟢 `localhost:8080` (Kobold-Claw Custom UI)
+Ein elegantes, lokales Web-Frontend im Glassmorphism-Stil, das speziell für dieses Projekt entwickelt wurde (befindet sich im Verzeichnis `/frontend`). Es bietet ein klassisches Layout (Sidebar links, offener Chat rechts), persistente Historie und detailliertes Agentic-Prompting (Edit, Delete, Regen).
+**Starten:**
+1. Starten Sie einen lokalen Webserver: `python -m http.server 8080 --directory frontend`
+2. Öffnen Sie in Ihrem Browser: **`http://localhost:8080`**
+
+### 🔴 `localhost:5001` (KoboldAI Lite)
+Dies ist die **standardmäßig eingebaute Benutzeroberfläche**, die tief in der KoboldCPP `.exe` verankert ist. Sie wirkt oft überladen durch viele Pop-Up-Windows (z.B. Context Data) und Eingabefelder am unteren Rand.
+**Wichtiger Hinweis:** Wenn Sie KoboldCPP starten und der Haken bei **"Launch Browser"** gesetzt ist (oder in der `config_3090_DEFAULT.kcpps` der Wert `"launch": true` steht), öffnet sich dieses Interface _automatisch_. 
+**Lösung:** Schließen Sie diesen Tab einfach und wechseln Sie zu `8080`. Um das automatische Öffnen dauerhaft zu verhindern, entfernen Sie den Haken "Launch Browser" in der KoboldCPP-App.
 
 ---
 
