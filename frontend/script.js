@@ -126,6 +126,10 @@ async function fetchModelInfo() {
     const modelBadge = document.getElementById('model-indicator');
     try {
         const hostIp = window.location.hostname || "127.0.0.1";
+        
+        // Ping Orchestrator so it knows UI is active and GPU should stay awake
+        fetch(`http://${hostIp}:8080/api/ping`, {method: 'GET'}).catch(e=>console.log("Ping failed"));
+        
         const response = await fetch(`http://${hostIp}:5001/api/v1/model`);
         if (response.ok) {
             const data = await response.json();
@@ -141,6 +145,19 @@ async function fetchModelInfo() {
         }
     } catch (e) {
         modelBadge.innerHTML = `<span class="status-dot error"></span> Offline`;
+    }
+}
+
+async function powerOffGPU() {
+    if(confirm("🛑 Power Off: Will completely unload the AI from the GPU and free 24GB VRAM. Proceed?")) {
+        const hostIp = window.location.hostname || "127.0.0.1";
+        document.getElementById('model-indicator').innerHTML = `<span class="status-dot error"></span> Shutting Down...`;
+        try {
+            await fetch(`http://${hostIp}:8080/api/poweroff`, {method: 'POST'});
+            setTimeout(fetchModelInfo, 2000);
+        } catch(e) {
+            console.error("Failed to shutdown", e);
+        }
     }
 }
 
@@ -161,13 +178,34 @@ const KOBOLD_URL = `http://${HOST_IP}:5001/v1/chat/completions`;
 
 marked.setOptions({ breaks: true, gfm: true });
 
+let sessionId = localStorage.getItem('claw_session_id');
+if(!sessionId) {
+    const dateStr = new Date().toISOString().slice(0,19).replace(/:/g,"-");
+    sessionId = "Chat_" + dateStr;
+    localStorage.setItem('claw_session_id', sessionId);
+}
+
 function saveToLocal() {
     localStorage.setItem('claw_chat_history', JSON.stringify(messages));
+    
+    // Fire and forget save to backend (Silent Memory Syncing)
+    const hostIp = window.location.hostname || "127.0.0.1";
+    fetch(`http://${hostIp}:8080/api/save_history`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId, messages: messages })
+    }).catch(e=>{});
 }
 
 function clearHistory() {
     messages = [];
     localStorage.removeItem('claw_chat_history');
+    
+    // Create new session ID so the server saves into a new file!
+    const dateStr = new Date().toISOString().slice(0,19).replace(/:/g,"-");
+    sessionId = "Chat_" + dateStr;
+    localStorage.setItem('claw_session_id', sessionId);
+    
     renderMessages();
 }
 

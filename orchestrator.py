@@ -5,9 +5,33 @@ import time
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 
+import threading
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
 LAUNCHERS_DIR = os.path.join(BASE_DIR, 'Launchers')
+CHAT_HISTORY_DIR = os.path.join(BASE_DIR, 'Chat-History')
+
+if not os.path.exists(CHAT_HISTORY_DIR):
+    os.makedirs(CHAT_HISTORY_DIR)
+
+# Auto-Timeout Mechanism (15 Minutes)
+LAST_HEARTBEAT = time.time()
+TIMEOUT_SECONDS = 900 
+
+def auto_shutdown_monitor():
+    global LAST_HEARTBEAT
+    while True:
+        time.sleep(30)
+        # If Kobold is loaded but there have been no visual UI pings for 15 mins
+        if time.time() - LAST_HEARTBEAT > TIMEOUT_SECONDS:
+            # Prevent spamming kills if already offline
+            LAST_HEARTBEAT = time.time()
+            print("💤 [IDLE TIMEOUT] No active network instances found for 15 minutes. Purging GPU VRAM...")
+            os.system('taskkill /F /IM koboldcpp.exe >nul 2>&1')
+
+# Boot daemon thread
+threading.Thread(target=auto_shutdown_monitor, daemon=True).start()
 
 # Central Model Registry with UI Metadata
 MODELS = {
@@ -68,6 +92,17 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        global LAST_HEARTBEAT
+        
+        # UI Heartbeat Ping
+        if self.path == '/api/ping':
+            LAST_HEARTBEAT = time.time()
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "alive"}).encode('utf-8'))
+            return
+            
         # Serve the Model Registry as JSON API
         if self.path == '/api/models':
             self.send_response(200)
@@ -80,6 +115,41 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
+        if self.path == '/api/save_history':
+            content_length = int(self.headers['Content-Length'])
+            req = json.loads(self.rfile.read(content_length).decode('utf-8'))
+            
+            session_id = req.get('session_id', 'unknown_session')
+            messages = req.get('messages', [])
+            
+            md_content = f"# 🧠 Persistent Memory Log: {session_id}\n\n"
+            for m in messages:
+                role = "User 👤" if m.get('role') == 'user' else "Agent 🤖"
+                content = m.get('content', '')
+                md_content += f"## {role}\n\n{content}\n\n---\n\n"
+            
+            filepath = os.path.join(CHAT_HISTORY_DIR, f"{session_id}.md")
+            try:
+                with open(filepath, "w", encoding="utf-8") as f:
+                    f.write(md_content)
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(b'{"status":"saved"}')
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+            return
+
+        if self.path == '/api/poweroff':
+            print("🛑 [KILLSWITCH] Manual network override initiated. Purging GPU VRAM...")
+            os.system('taskkill /F /IM koboldcpp.exe >nul 2>&1')
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "shutdown"}).encode('utf-8'))
+            return
+            
         if self.path == '/api/search':
             content_length = int(self.headers['Content-Length'])
             req = json.loads(self.rfile.read(content_length).decode('utf-8'))

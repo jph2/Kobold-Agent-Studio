@@ -1,4 +1,4 @@
-# 📋 Kobold-Claw-Link-MCP: Project Specifications & Requests
+# 📋 Kobold-Agent-Studio: Project Specifications & Requests
 
 This document distills the original user requests, technical requirements, and implemented features achieved during the development of the local AI Agent infrastructure.
 
@@ -17,8 +17,8 @@ To create an "Agent-Ready", highly stable local LLM interface and MCP framework 
 - [x] **REQ:** Bypass hardcoded 8k context limits and fully utilize the 24GB VRAM.
   - **Spec:** Applied `overridenativecontext` to `.kcpps` profiles, allowing 100% VRAM allocation.
   - **Spec:** Benchmarked the "Sweet Spot" for 30B models at exactly `24,576` Tokens.
-- [x] **REQ:** Provide models specifically for massive context tasks (Coding) und lightweight RAG.
-  - **Spec:** Integrated **Qwen2.5-Coder-7B** & **Llama-3.1-8B** to achieve gigantuan **128,000 Token** context windows on a single 3090 by utilizing smaller parameter sizes.
+- [x] **REQ:** Provide models specifically for massive context tasks (Coding) and lightweight RAG.
+  - **Spec:** Integrated **Qwen2.5-Coder-7B** & **Llama-3.1-8B** to achieve gargantuan **128,000 Token** context windows on a single 3090 by utilizing smaller parameter sizes.
 
 ### 🤖 Autonomous Agent Integration (Skills)
 - [x] **REQ:** Agents operating within the system must be able to switch models.
@@ -28,7 +28,7 @@ To create an "Agent-Ready", highly stable local LLM interface and MCP framework 
 - [x] **REQ:** Persistent chat logs.
   - **Spec:** Implemented `localStorage` state saving. Chat survives browser refreshes.
 - [x] **REQ:** Advanced prompt-engineering controls.
-  - **Spec:** Added Edit, Delete, and Regenerate (Regen 🎲) buttons to individual messages.
+  - **Spec:** Added Edit, Delete, and Regenerate (Regenerate 🎲) buttons to individual messages.
 - [x] **REQ:** Live token tracking.
   - **Spec:** Implemented a real-time visual "Context Gauge" to monitor token limits.
   - **Spec:** Live API pinging on `port 5001` to display the absolute current active model file.
@@ -39,10 +39,10 @@ To create an "Agent-Ready", highly stable local LLM interface and MCP framework 
 - [x] **REQ:** One-Click UI Model Hot-Swapping with Pros/Cons cards.
   - **Spec:** Built `orchestrator.py` to replace static `http.server`. It acts as a bridge between the browser and OS.
   - **Spec:** Added a top-bar **Model Hub Gallery** displaying 4 tailored models (Pros, Cons, Speed, Context Size).
-  - **Spec:** Clicking a model checks token capacity and warns of potential truncation ("Context Overflow Warning") before utilizing Python to kill and reboot the `.bat` launchers in the background.
+  - **Spec:** Clicking a model checks token capacity and warns of potential truncation before utilizing Python to autonomously kill and reboot the `.bat` launchers in the background.
 
 ## 3. Pending / Future Requests
-- [ ] **Context & Reasoning Summarization Workflow**: Transition from raw-text retention to an automated "Summarization Protocol" prior to hot-swapping.
-  - *Rationale*: Heavy reasoning models (like Nemotron-30B) generate massive hidden `<think>` streams containing their actual logical deductions. Discarding the model deletes these invisible thoughts. Triggering the model to generate a dense, explicit "Architecture Summary" before executing the hot-swap ensures the logical density is preserved for the next model, which is mathematically and contextually far superior to swapping pure, loose chat history.
+- [x] **Context & Reasoning Summarization Workflow**: Transition from raw-text retention to an automated "Summarization Protocol" prior to hot-swapping.
+  - *Rationale*: Heavy reasoning models (like Nemotron-30B) generate massive hidden `<think>` streams containing their actual logical deductions. Discarding the model deletes these invisible thoughts. Triggering the model to generate a dense, explicit "Architecture Summary" before executing the hot-swap ensures the logical density is preserved for the next model, which is mathematically and contextually far superior to swapping pure, loose chat history. **(IMPLEMENTED)**
 - [ ] Investigate real-time text streaming (SSE/WebSockets) for the frontend to reduce perceived latency on large generation tasks.
 - [ ] Connect the UI remotely (e.g., Mobile access) using Sunshine/Moonlight streaming infrastructures or direct tunneling.

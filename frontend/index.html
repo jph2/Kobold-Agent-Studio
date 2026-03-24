@@ -11,8 +11,11 @@
     <aside>
         <div class="header">
             <h1>Kobold Agent <span>Studio</span></h1>
-            <div id="model-indicator" class="model-badge">
-                <span class="status-dot"></span> Loading Engine...
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div id="model-indicator" class="model-badge">
+                    <span class="status-dot"></span> Loading Engine...
+                </div>
+                <button onclick="powerOffGPU()" class="action-btn" title="Free GPU VRAM (Global Killswitch)" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--error-red); padding: 5px 10px; font-size: 0.9rem;">🛑</button>
             </div>
         </div>
         
@@ -45,10 +48,14 @@
                 <label>Max Response Tokens</label>
                 <input type="number" id="max-tokens" value="4096">
             </div>
+            <div class="config-item" style="margin-top: 10px; align-items: center; justify-content: flex-start;">
+                <input type="checkbox" id="websearch-toggle" style="width:auto; margin-right: 8px;">
+                <label for="websearch-toggle" style="margin:0;">Enable Web Search 🌐</label>
+            </div>
             <div style="margin-top: 15px; font-size: 0.75rem; color: rgba(255, 255, 255, 0.55); line-height: 1.5;">
-                <strong style="color:var(--text-primary)">Max Context:</strong> Setzt das harte Limit an Token, auf das das Modell im Speicher zurückschauen darf.<br>
-                <strong style="color:var(--text-primary)">Temperature:</strong> Steuert die KI-Kreativität (0.1 = strikt logisch, 0.8 = kreativ).<br>
-                <strong style="color:var(--text-primary)">Response Tokens:</strong> Die exakte Maximallänge der Bot-Antwort pro Vorgang.
+                <strong style="color:var(--text-primary)">Max Context:</strong> Sets the hard token limit defining how far back the model can look in memory.<br>
+                <strong style="color:var(--text-primary)">Temperature:</strong> Controls AI creativity (0.1 = strictly logical, 0.8+ = creative).<br>
+                <strong style="color:var(--text-primary)">Response Tokens:</strong> Exact maximum length of the bot's response per action.
             </div>
         </div>
 
@@ -60,12 +67,12 @@
             <h3 style="margin-bottom: 8px; font-size: 0.8rem; color: var(--text-secondary);">Memory States</h3>
             <button class="action-btn" onclick="exportHistory()" style="width: 100%; margin-bottom: 5px; justify-content: center;">💾 Export Chat State</button>
             <button class="action-btn" onclick="document.getElementById('import-file').click()" style="width: 100%; justify-content: center;">📂 Import Chat State</button>
-            <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importHistory(event)">
+            <input type="file" id="import-file" style="display: none;" accept=".md, .json" onchange="importHistory(event)">
         </div>
         
         <!-- Danger Zone -->
         <div class="settings-block" style="margin-top: 1rem; margin-bottom: 1rem;">
-            <button onclick="clearAll()" class="action-btn" style="background: rgba(239, 68, 68, 0.1); color: var(--error-red); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); width: 100%; justify-content: center; font-weight: 500;">
+            <button onclick="clearAll()" class="action-btn" title="Irreversibly deletes the entire chat history" style="background: rgba(239, 68, 68, 0.1); color: var(--error-red); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); width: 100%; justify-content: center; font-weight: 500;">
                 Clear History 🗑️
             </button>
         </div>

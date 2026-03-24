@@ -1,5 +1,6 @@
 @echo off
 echo Starting LongContext_Llama-8B with 128000 tokens context window...
 echo Ensure the previous KoboldCPP window is closed before starting this one!
-:: Using generic koboldcpp call. Adjust 'koboldcpp.exe' path if necessary.
-start "" koboldcpp.exe --config "E:\SynologyDrive\9999_LocalRepo\Kobold-Claw-Link-MCP\Launchers\LongContext_Llama-8B.kcpps"
+:: Hardcoded to the user's new custom location C:\Kobold-Agent-Studio_LOCAL
+set "CONFIG_PATH=%~dp0LongContext_Llama-8B.kcpps"
+start "" "C:\Kobold-Agent-Studio_LOCAL\koboldcpp.exe" --config "%CONFIG_PATH%"
