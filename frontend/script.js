@@ -50,25 +50,71 @@ function confirmModelSwitch(model) {
         return;
     }
     
-    // Determine current token count rough estimate
-    const currentTokensStr = document.getElementById('usage-text').innerText.split(' / ')[0].replace(/,/g, '');
-    const currentTokens = parseInt(currentTokensStr) || 0;
+    let wantsSummary = false;
     
-    if (currentTokens > model.context) {
-        const confirmSwitch = confirm(`⚠️ WARNING: Context Overflow!\n\nYour current chat history is ~${currentTokens.toLocaleString()} tokens.\nThe new model (${model.name}) only supports a maximum of ${model.context.toLocaleString()} tokens.\n\nIf you proceed, the older parts of the conversation will be completely ignored by the new model (truncation). Do you wish to continue switching?`);
-        if (!confirmSwitch) return;
-    } else {
-        const confirmNormal = confirm(`Switching the Engine to ${model.name} will terminate the current AI process and boot a new one. This takes roughly 15-20 seconds.\n\nReady to hot-swap?`);
-        if(!confirmNormal) return;
+    // Fragt ab, ob komprimiert werden soll, falls Chat existiert
+    if (messages.length > 0) {
+        wantsSummary = confirm(`🧠 Memory Compression Protocol\n\nDo you want the current AI to densely summarize all reasoning, logic, and context into a single "Inherited Memory State" before executing the hot-swap?\n\n(Click OK to Auto-Summarize, or Cancel to keep raw loose text and swap immediately).`);
     }
+
+    if (wantsSummary) {
+        executeSummarizeAndSwap(model);
+    } else {
+        triggerBackendSwap(model);
+    }
+}
+
+async function executeSummarizeAndSwap(targetModel) {
+    document.getElementById('model-indicator').innerHTML = `<span class="status-dot error" style="background:var(--neon-blue);box-shadow:0 0 8px var(--neon-blue);"></span> Distilling Memory...`;
     
-    // User agreed, trigger backend
+    let summaryMessages = [...messages];
+    summaryMessages.push({
+        role: "user",
+        // Der Befehl, der das alte Modell zwingt, sein "Gehirn" für das naechste Modell in eine dichte Form zu giessen
+        content: "CRITICAL SYSTEM PROTOCOL: Summarize our entire conversation thus far into a highly dense, expert-level technical briefing. Extract all core logical deductions, architectural decisions, and important snippets. Discard conversational filler. Format as a dense Markdown specification document. This summary will be strictly inherited by the next AI engine."
+    });
+
+    try {
+        const response = await fetch('http://localhost:5001/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                messages: summaryMessages,
+                max_tokens: 2048,
+                temperature: 0.2
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const summaryText = data.choices[0].message.content;
+
+            // Zerstören des alten Chats und ersetzen mit dem komprimierten "Memory Block"
+            messages = [
+                { role: "assistant", content: "### 🧠 INHERITED MEMORY COMPRESSION\n\n*The previous AI architecture left you the following contextual memory state to continue from:*\n\n---\n\n" + summaryText }
+            ];
+            
+            localStorage.setItem('claw_chat_history', JSON.stringify(messages));
+            renderMessages();
+            triggerBackendSwap(targetModel);
+        } else {
+            alert("Summarization logic failed (API Error). Switching without compression.");
+            triggerBackendSwap(targetModel);
+        }
+    } catch(e) {
+        console.error(e);
+        alert("Summarization request failed. Engine offline? Switching normally.");
+        triggerBackendSwap(targetModel);
+    }
+}
+
+function triggerBackendSwap(targetModel) {
+    document.getElementById('model-indicator').innerHTML = `<span class="status-dot error"></span> Rebooting Engine...`;
     fetch('http://localhost:8080/api/switch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model_id: model.id })
+        body: JSON.stringify({ model_id: targetModel.id })
     }).then(() => {
-        document.getElementById('model-indicator').innerHTML = `<span class="status-dot error"></span> Rebooting Engine...`;
         setTimeout(renderModelHub, 15000); // refresh UI in 15 seconds
     });
 }
