@@ -42,5 +42,7 @@ To create an "Agent-Ready", highly stable local LLM interface and MCP framework 
   - **Spec:** Clicking a model checks token capacity and warns of potential truncation ("Context Overflow Warning") before utilizing Python to kill and reboot the `.bat` launchers in the background.
 
 ## 3. Pending / Future Requests
+- [ ] **Context & Reasoning Summarization Workflow**: Transition from raw-text retention to an automated "Summarization Protocol" prior to hot-swapping.
+  - *Rationale*: Heavy reasoning models (like Nemotron-30B) generate massive hidden `<think>` streams containing their actual logical deductions. Discarding the model deletes these invisible thoughts. Triggering the model to generate a dense, explicit "Architecture Summary" before executing the hot-swap ensures the logical density is preserved for the next model, which is mathematically and contextually far superior to swapping pure, loose chat history.
 - [ ] Investigate real-time text streaming (SSE/WebSockets) for the frontend to reduce perceived latency on large generation tasks.
 - [ ] Connect the UI remotely (e.g., Mobile access) using Sunshine/Moonlight streaming infrastructures or direct tunneling.
