@@ -1,83 +1,137 @@
 const chatContainer = document.getElementById('chat-container');
 const chatInput = document.getElementById('chat-input');
 const sendBtn = document.getElementById('send-btn');
-const systemStatus = document.getElementById('system-status');
+const usageFill = document.getElementById('usage-fill');
+const usageText = document.getElementById('usage-text');
+const maxContextInput = document.getElementById('max-context');
 
-// Default Kobold Endpoint
+let messages = [];
+
+// Configuration
 const KOBOLD_URL = 'http://localhost:5001/v1/chat/completions';
 
-// Marked configuration
-marked.setOptions({
-    breaks: true,
-    gfm: true
-});
+marked.setOptions({ breaks: true, gfm: true });
 
-function appendMessage(role, text) {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${role === 'user' ? 'user-msg' : 'bot-msg'}`;
-    msgDiv.innerHTML = marked.parse(text);
-    chatContainer.appendChild(msgDiv);
+function renderMessages() {
+    chatContainer.innerHTML = '';
+    messages.forEach((msg, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'message-wrapper';
+        
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${msg.role === 'user' ? 'user-msg' : 'bot-msg'}`;
+        msgDiv.innerHTML = marked.parse(msg.content);
+        
+        const actions = document.createElement('div');
+        actions.className = 'msg-actions';
+        
+        let regenBtn = (msg.role === 'assistant') ? `<button class="action-btn" onclick="regenerateFrom(${index})">Regen 🎲</button>` : '';
+        
+        actions.innerHTML = `
+            ${regenBtn}
+            <button class="action-btn" onclick="startEdit(${index})">Edit</button>
+            <button class="action-btn" onclick="deleteMsg(${index})" style="color:rgba(255,255,255,0.3)">Del</button>
+        `;
+        
+        wrapper.appendChild(msgDiv);
+        wrapper.appendChild(actions);
+        chatContainer.appendChild(wrapper);
+    });
     chatContainer.scrollTop = chatContainer.scrollHeight;
-    return msgDiv;
+}
+
+function startEdit(index) {
+    const parent = chatContainer.children[index];
+    const msgDiv = parent.querySelector('.message');
+    const originalText = messages[index].content;
+    
+    msgDiv.innerHTML = `<textarea class="edit-area" id="edit-area-${index}">${originalText}</textarea>
+                        <div style="margin-top: 5px; display: flex; gap: 10px;">
+                            <button class="action-btn" style="color:var(--neon-blue)" onclick="saveEdit(${index})">Save</button>
+                            <button class="action-btn" onclick="renderMessages()">Cancel</button>
+                        </div>`;
+    
+    const textarea = document.getElementById(`edit-area-${index}`);
+    textarea.style.height = (textarea.scrollHeight + 10) + 'px';
+}
+
+function saveEdit(index) {
+    const newText = document.getElementById(`edit-area-${index}`).value;
+    messages[index].content = newText;
+    renderMessages();
+}
+
+function deleteMsg(index) {
+    messages.splice(index, 1);
+    renderMessages();
+}
+
+async function regenerateFrom(index) {
+    // To regenerate bot msg at index, we remove it and everything after it
+    // then call API with the history before it.
+    messages = messages.slice(0, index);
+    renderMessages();
+    
+    // The previous message was the user query, so we just call the API logic
+    await callApi();
 }
 
 async function sendMessage() {
     const text = chatInput.value.trim();
     if (!text) return;
 
+    messages.push({ role: 'user', content: text });
     chatInput.value = '';
     chatInput.style.height = 'auto';
-    appendMessage('user', text);
+    renderMessages();
+    
+    await callApi();
+}
 
+async function callApi() {
     // Initial Bot Message (Loading State)
-    const botMsgDiv = appendMessage('bot', 'Nemotron is thinking...');
-    systemStatus.textContent = 'System: Processing...';
-    systemStatus.style.borderColor = '#ffcc00';
-    systemStatus.style.color = '#ffcc00';
+    const botIndex = messages.length;
+    messages.push({ role: 'assistant', content: 'generating...' });
+    renderMessages();
 
     try {
         const response = await fetch(KOBOLD_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'nemotron-cascade-2',
-                messages: [{ role: 'user', content: text }],
+                messages: messages.slice(0, -1), // History up to current
                 temperature: parseFloat(document.getElementById('temp').value) || 0.7,
-                max_tokens: 4096
+                max_tokens: parseInt(document.getElementById('max-tokens').value) || 4096
             })
         });
 
-        if (!response.ok) throw new Error('CORS or Connection Error. Make sure Kobold is started with --corsorigin *');
-
         const data = await response.json();
         const reply = data.choices[0].message.content;
-
-        botMsgDiv.innerHTML = marked.parse(reply);
-        systemStatus.textContent = 'System: Ready';
-        systemStatus.style.borderColor = '#00d4ff';
-        systemStatus.style.color = '#00d4ff';
+        const usage = data.usage || { total_tokens: 0 };
+        
+        messages[botIndex] = { role: 'assistant', content: reply };
+        
+        // Update Usage
+        const max = parseInt(maxContextInput.value) || 32768;
+        const used = usage.total_tokens || 0;
+        const percent = Math.min(100, (used / max) * 100);
+        
+        usageFill.style.width = percent + '%';
+        usageText.textContent = `${used.toLocaleString()} / ${(max / 1024).toFixed(0)}k`;
+        
+        renderMessages();
 
     } catch (error) {
-        botMsgDiv.innerHTML = `<span style="color: #ff4a4a;">Error: ${error.message}</span>`;
-        systemStatus.textContent = 'System: Network Error';
-        systemStatus.style.borderColor = '#ff4a4a';
-        systemStatus.style.color = '#ff4a4a';
+        messages[botIndex] = { role: 'assistant', content: `<span style="color:var(--error-red)">Error: ${error.message}</span>` };
+        renderMessages();
     }
 }
 
-// Event Listeners
+// Listeners
 sendBtn.addEventListener('click', sendMessage);
-
 chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
-
-// Auto-expand textarea
 chatInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';

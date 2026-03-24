@@ -20,7 +20,7 @@ This repository is a **minimal usable connector v1**. It provides a robust, stan
 
 ### 1. Host Machine (Windows RTX 3090)
 1. Run **[KoboldCPP v1.110](https://github.com/LostRuins/koboldcpp/releases/tag/v1.110)** or newer.
-2. Load your model (e.g., **[Nemotron-Cascade-2-30B IQ4_XS](https://huggingface.co/mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF/tree/main)**).
+2. Load your model using the default config: `koboldcpp.exe --config C:\AI_Models\config_3090_DEFAULT.kcpps`.
 3. **Crucial:** Ensure Kobold starts with `--corsorigin *` to allow browser-based dashboard access.
 
 ### 2. Client Side Setup (e.g., in your local Repo)
