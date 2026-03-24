@@ -9,17 +9,23 @@
 </head>
 <body>
     <aside>
-        <div class="header" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-            <div style="display: flex; flex-direction: column;">
-                <h1 style="line-height: 1;">Kobold Agent <span>Studio</span></h1>
-                <div id="model-indicator" class="model-badge" style="margin-top: 6px; width: fit-content;">
+        <div class="header" style="display: flex; flex-direction: column;">
+            <h1 style="line-height: 1; margin-bottom: 12px;">Kobold Agent <span>Studio</span></h1>
+            
+            <div style="display: flex; flex-direction: column; width: 100%;">
+                <div id="model-indicator" class="model-badge" style="width: 100%; margin: 0; box-sizing: border-box; justify-content: center;">
                     <span class="status-dot"></span> Loading Engine...
                 </div>
+                
+                <button id="global-killswitch" 
+                        onclick="if(this.classList.contains('active')) { this.innerText='DOUBLE CLICK! ⚠️'; setTimeout(() => {if(this.classList.contains('active')) this.innerText='DOUBLE-CLICK TO KILL'}, 1500); }" 
+                        ondblclick="powerOffGPU()" 
+                        class="glossy-killswitch offline" 
+                        title="Double Click to Free GPU VRAM" 
+                        style="width: 100%; margin-top: 6px; box-sizing: border-box; justify-content: center;">
+                    DOUBLE-CLICK TO KILL
+                </button>
             </div>
-            
-            <button id="global-killswitch" onclick="powerOffGPU()" class="glossy-killswitch offline" title="Free GPU VRAM (Global Killswitch)">
-                KILL SWITCH
-            </button>
         </div>
         
         <div class="sidebar-section info-box" style="margin-top: 1rem;">

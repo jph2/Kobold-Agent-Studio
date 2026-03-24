@@ -144,16 +144,17 @@ async function fetchModelInfo() {
             if (killBtn) {
                 killBtn.classList.remove('offline');
                 killBtn.classList.add('active');
+                killBtn.innerHTML = "DOUBLE-CLICK TO KILL";
             }
             
             if(Object.keys(availableModels).length > 0) renderModelHub();
         } else {
             modelBadge.innerHTML = `<span class="status-dot error"></span> API Error`;
-            if (killBtn) { killBtn.classList.remove('active'); killBtn.classList.add('offline'); }
+            if (killBtn) { killBtn.classList.remove('active'); killBtn.classList.add('offline'); killBtn.innerHTML = "DOUBLE-CLICK TO KILL"; }
         }
     } catch (e) {
         modelBadge.innerHTML = `<span class="status-dot error"></span> Offline`;
-        if (killBtn) { killBtn.classList.remove('active'); killBtn.classList.add('offline'); }
+        if (killBtn) { killBtn.classList.remove('active'); killBtn.classList.add('offline'); killBtn.innerHTML = "DOUBLE-CLICK TO KILL"; }
     }
 }
 
@@ -161,20 +162,22 @@ async function powerOffGPU() {
     const killBtn = document.getElementById('global-killswitch');
     if(killBtn && killBtn.classList.contains('offline')) return; // ignore clicks if already offline
     
-    if(confirm("🛑 Power Off: Will completely unload the AI from the GPU and free 24GB VRAM. Proceed?")) {
-        const hostIp = window.location.hostname || "127.0.0.1";
-        document.getElementById('model-indicator').innerHTML = `<span class="status-dot error"></span> Shutting Down...`;
-        if (killBtn) {
-            killBtn.classList.remove('active');
-            killBtn.classList.add('offline');
-        }
-        try {
-            await fetch(`http://${hostIp}:8080/api/poweroff`, {method: 'POST'});
-            setTimeout(fetchModelInfo, 2000);
-        } catch(e) {
-            console.error("Failed to shutdown", e);
-            if (killBtn) { killBtn.classList.add('active'); killBtn.classList.remove('offline'); }
-        }
+    // Removed browser confirm() popup because double-click is visually safer and faster!
+    const hostIp = window.location.hostname || "127.0.0.1";
+    document.getElementById('model-indicator').innerHTML = `<span class="status-dot error"></span> Shutting Down...`;
+    
+    if (killBtn) {
+        killBtn.classList.remove('active');
+        killBtn.classList.add('offline');
+        killBtn.innerHTML = "KILLING...";
+    }
+    
+    try {
+        await fetch(`http://${hostIp}:8080/api/poweroff`, {method: 'POST'});
+        setTimeout(fetchModelInfo, 2000);
+    } catch(e) {
+        console.error("Failed to shutdown", e);
+        if (killBtn) { killBtn.classList.add('active'); killBtn.classList.remove('offline'); killBtn.innerHTML = "DOUBLE-CLICK TO KILL"; }
     }
 }
 
