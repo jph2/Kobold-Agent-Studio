@@ -23,9 +23,17 @@ function renderModelHub() {
     
     // figure out which one is active by checking the model-indicator text
     const activeText = document.getElementById('model-indicator').innerText.toLowerCase();
+    const virtualModel = localStorage.getItem('claw_virtual_model');
     
     Object.values(availableModels).forEach(model => {
-        const isActive = activeText.includes(model.name.split(' ')[0].toLowerCase());
+        let isActive = false;
+        if (model.id === "NVIDIA_USDcode") {
+            isActive = (virtualModel === "NVIDIA_USDcode");
+        } else {
+            // For GGUF files, we match the prefix of the filename to the card text usually
+            isActive = activeText.includes(model.name.split(' ')[0].toLowerCase()) && virtualModel !== "NVIDIA_USDcode";
+        }
+        
         const card = document.createElement('div');
         card.className = `model-card ${isActive ? 'active' : ''}`;
         card.onclick = () => confirmModelSwitch(model);
@@ -110,14 +118,25 @@ async function executeSummarizeAndSwap(targetModel) {
 }
 
 function triggerBackendSwap(targetModel) {
-    document.getElementById('model-indicator').innerHTML = `<span class="status-dot error"></span> Rebooting Engine...`;
+    if (targetModel.id === "NVIDIA_USDcode") {
+        document.getElementById('model-indicator').innerHTML = `<span class="status-dot error" style="background:#76b900"></span> Connecting to Cloud...`;
+        localStorage.setItem('claw_virtual_model', "NVIDIA_USDcode");
+    } else {
+        document.getElementById('model-indicator').innerHTML = `<span class="status-dot error"></span> Rebooting Engine...`;
+        localStorage.removeItem('claw_virtual_model');
+    }
+    
     const hostIp = window.location.hostname || "127.0.0.1";
     fetch(`http://${hostIp}:8080/api/switch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model_id: targetModel.id })
     }).then(() => {
-        setTimeout(renderModelHub, 15000); // refresh UI in 15 seconds
+        if (targetModel.id === "NVIDIA_USDcode") {
+            setTimeout(fetchModelInfo, 2000); // UI reflects switch immediately
+        } else {
+            setTimeout(renderModelHub, 15000); // GGUF takes 15 secs
+        }
     });
 }
 
@@ -125,11 +144,25 @@ function triggerBackendSwap(targetModel) {
 async function fetchModelInfo() {
     const modelBadge = document.getElementById('model-indicator');
     const killBtn = document.getElementById('global-killswitch');
+    
+    const virtualModel = localStorage.getItem('claw_virtual_model');
+    
     try {
         const hostIp = window.location.hostname || "127.0.0.1";
         
         // Ping Orchestrator so it knows UI is active and GPU should stay awake
         fetch(`http://${hostIp}:8080/api/ping`, {method: 'GET'}).catch(e=>console.log("Ping failed"));
+        
+        if (virtualModel === "NVIDIA_USDcode") {
+            modelBadge.innerHTML = `<span class="status-dot active" style="background:#76b900"></span> <span title="Cloud Endpoint">NVIDIA USDcode</span>`;
+            if (killBtn) {
+                killBtn.classList.remove('active');
+                killBtn.classList.add('offline');
+                killBtn.innerHTML = "CLOUD MODE";
+            }
+            if(Object.keys(availableModels).length > 0) renderModelHub();
+            return;
+        }
         
         const response = await fetch(`http://${hostIp}:5001/api/v1/model`);
         if (response.ok) {
@@ -153,10 +186,12 @@ async function fetchModelInfo() {
             if (killBtn) { killBtn.classList.remove('active'); killBtn.classList.add('offline'); killBtn.innerHTML = "DOUBLE-CLICK TO KILL"; }
         }
     } catch (e) {
+        if (virtualModel === "NVIDIA_USDcode") return; // skip error if virtual
         modelBadge.innerHTML = `<span class="status-dot error"></span> Offline`;
         if (killBtn) { killBtn.classList.remove('active'); killBtn.classList.add('offline'); killBtn.innerHTML = "DOUBLE-CLICK TO KILL"; }
     }
 }
+
 
 async function powerOffGPU() {
     const killBtn = document.getElementById('global-killswitch');
@@ -337,38 +372,51 @@ async function sendMessage() {
         } catch(e) {
             console.error("Web Search Request failed or Orchestrator is disconnected.");
         }
-        document.getElementById('model-indicator').innerHTML = `<span class="status-dot active"></span> Inference Engine`;
-    }
-
-    const usdToggle = document.getElementById('usd-agent-toggle');
-    if (usdToggle && usdToggle.checked) {
-        document.getElementById('model-indicator').innerHTML = `<span class="status-dot error" style="background:#76b900;box-shadow:0 0 8px #76b900;"></span> NVIDIA USD Agent...`;
-        try {
-            const hostIp = window.location.hostname || "127.0.0.1";
-            const usdReq = await fetch(`http://${hostIp}:8080/api/usd_agent`, {
-                method: 'POST',
-                headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({query: text})
-            });
-            if (usdReq.ok) {
-               const usdData = await usdReq.json();
-               if(usdData.results) {
-                   const formattedUsd = usdData.results.replace(/\n/g, '\n> ');
-                   finalPrompt += `\n\n> [!NOTE]\n> **USD code NIM Data (NVIDIA Agent):**\n> ${formattedUsd}\n> *(Please analyze and structure this USD code to answer the user's primary query comprehensively)*`;
-               }
-            }
-        } catch(e) {
-            console.error("USD Agent Request failed.", e);
-        }
-        document.getElementById('model-indicator').innerHTML = `<span class="status-dot active"></span> Inference Engine`;
-    }
-
     messages.push({ role: 'user', content: finalPrompt });
     chatInput.value = '';
     chatInput.style.height = 'auto'; // reset height
     renderMessages();
     
-    await callApi();
+    if (localStorage.getItem('claw_virtual_model') === "NVIDIA_USDcode") {
+        await callUsdNimApi(text);
+    } else {
+        await callApi();
+    }
+}
+
+async function callUsdNimApi(query) {
+    const botIndex = messages.length;
+    messages.push({ role: 'assistant', content: '<span style="color:#76b900">NVIDIA NIM (USDcode) 🟩</span> is generating...' });
+    renderMessages();
+
+    try {
+        const hostIp = window.location.hostname || "127.0.0.1";
+        const response = await fetch(`http://${hostIp}:8080/api/usd_agent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query })
+        });
+        
+        let reply = "";
+        if (response.ok) {
+            const data = await response.json();
+            reply = data.results || "USD NIM returned an empty response.";
+            // Strip any raw NVIDIA thinking blocks if you want but this is standard
+        } else {
+            reply = "NVIDIA NIM Error: Endpoint unreachable or failed.";
+        }
+        
+        messages[botIndex] = { role: 'assistant', content: reply };
+        
+        // NIM doesn't use local tokens, just flash usage bar
+        const usageFill = document.getElementById('usage-fill');
+        if(usageFill) { usageFill.style.background = "linear-gradient(90deg, #76b900, #40e0d0)"; }
+        
+        renderMessages();
+    } catch (e) {
+        messages[botIndex] = { role: 'assistant', content: `<span style="color:var(--error-red)">NVIDIA NIM Error: ${e.message}</span>` };
+        renderMessages();
+    }
 }
 
 async function callApi() {

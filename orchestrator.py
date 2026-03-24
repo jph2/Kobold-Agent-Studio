@@ -56,11 +56,19 @@ MODELS = {
     "Heavy_Nemotron-30B": {
         "id": "Heavy_Nemotron-30B",
         "name": "Nemotron-Cascade 30B",
-        "context": 24576,
         "speed": "Slow 🐢",
-        "pros": "Unrivaled deep reasoning, perfect for complex NLP and logic.",
-        "cons": "Slow generation, limited 24k context window.",
-        "bat": "START_Heavy_Nemotron-30B.bat"
+        "pros": "Absolute benchmark for coherent roleplay, deep nuances, and flawless long German.",
+        "cons": "Heavy on the VRAM, slightly slower generation.",
+        "bat": "START_Nemotron-30B-32k.bat"
+    },
+    "NVIDIA_USDcode": {
+        "id": "NVIDIA_USDcode",
+        "name": "NVIDIA USDcode",
+        "context": 8192,
+        "speed": "Cloud ☁️",
+        "pros": "NVIDIA NIM specialized massive 70B parameter agent for official Universal Scene Description generation.",
+        "cons": "Requires active internet and valid NVIDIA NIM API Key credentials.",
+        "bat": "VIRTUAL_ENDPOINT"
     },
     "Speed_Nemo-Mini-4B": {
         "id": "Speed_Nemo-Mini-4B",
@@ -254,11 +262,15 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
                 time.sleep(2)  # Wait for VRAM to clear
                 
                 # 2. Start new bat file
-                bat_path = os.path.join(LAUNCHERS_DIR, MODELS[target_model]['bat'])
-                print(f"2. Launching new Model: {bat_path}")
-                
-                # Use subprocess to launch in detached mode
-                subprocess.Popen(f'cmd.exe /c "{bat_path}"', cwd=LAUNCHERS_DIR, creationflags=subprocess.CREATE_NEW_CONSOLE)
+                bat_path = MODELS[target_model].get('bat', '')
+                if bat_path == "VIRTUAL_ENDPOINT":
+                    print(f"2. Launching Virtual Endpoint: {target_model} (Local GPUs freed)")
+                else:
+                    full_bat_path = os.path.join(LAUNCHERS_DIR, bat_path)
+                    print(f"2. Launching new Model: {full_bat_path}")
+                    # Use subprocess to launch in detached mode
+                    # 'creationflags' is Windows only: 0x00000010 creates a new console window
+                    subprocess.Popen(f'cmd.exe /c "{full_bat_path}"', cwd=LAUNCHERS_DIR, creationflags=16)
                 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
