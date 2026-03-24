@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Models (zu gross fuer Git)
+*.gguf
+*.bin
+
+# Local configs
+config.json
+*.kcpps
