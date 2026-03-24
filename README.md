@@ -44,7 +44,7 @@ If `KOBOLD_URL` is given as just `/v1`, the bridge normalizes it to `/v1/chat/co
 ```json
 "kobold-nemotron-bridge": {
   "command": "python",
-  "args": ["E:/Pfad/zu/Kobold-Claw-Link-MCP/router.py"],
+  "args": ["E:/path/to/Kobold-Claw-Link-MCP/router.py"],
   "env": {
     "KOBOLD_URL": "http://localhost:5001/v1/chat/completions",
     "KOBOLD_MODEL": "nemotron-cascade-2",
