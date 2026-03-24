@@ -218,7 +218,7 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
                 print(f"🟩 [NVIDIA USD AGENT] Routing to USDcodeNIM: {query[:30]}...")
                 
                 if not os.path.exists(nim_script_path):
-                    reply = "Error: USDcodeNIM_MCP repository not found at E:\SynologyDrive\9999_LocalRepo\USDcodeNIM_MCP"
+                    reply = r"Error: USDcodeNIM_MCP repository not found at E:\SynologyDrive\9999_LocalRepo\USDcodeNIM_MCP"
                 else:
                     # Run it! It connects using httpx and writes raw stdout.
                     proc = subprocess.run([sys.executable, nim_script_path, query], capture_output=True, text=True, timeout=120)
