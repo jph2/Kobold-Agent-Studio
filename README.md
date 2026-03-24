@@ -1,109 +1,69 @@
-# Kobold-Claw-Link-MCP
+# Kobold-Claw-Link-MCP 🔗
 
-A small MCP bridge that lets agent frameworks call a local **KoboldCpp** server, including a Windows workhorse over Tailscale.
+A high-performance **MCP (Model Context Protocol)** bridge that connects agentic frameworks (**Antigravity**, **OpenClaw**, **NemoClaw**) to a local **KoboldCpp** server. This setup is specifically optimized for utilizing an **NVIDIA RTX 3090** as a local computing workhorse, available even remotely via **Tailscale**.
 
-This repository is now a **minimal usable connector v1**.
-It is still **not** a full router.
+---
 
-## Current scope
-It currently provides:
-- `healthcheck` — confirms the configured endpoint is reachable
-- `config_info` — shows the active bridge configuration and query profiles
-- `query_local_model` — sends a configurable chat request
-- `query_fast` — shorter / cheaper profile
-- `query_deep` — longer / heavier profile
+### 🚀 Connector v1 Status
+This repository is a **minimal usable connector v1**. It provides a robust, standardized interface to your local models.
 
-## What it is
-- a thin MCP bridge to **one configured KoboldCpp/OpenAI-compatible chat endpoint**
-- suitable for private local-model calls from agent systems
-- a stepping stone toward a later multi-target routing layer
+**Key Features v1:**
+- ✅ `healthcheck` — verify connection to the local 3090 endpoint.
+- ✅ `config_info` — inspect currently active configurations and query profiles.
+- ✅ `query_local_model` — robust chat request tool with improved error handling.
+- ✅ `query_fast` / `query_deep` — built-in profiles for simple "short/fast" vs "thorough/deep" task separation.
+- ✅ **Endpoint Normalization** — automatically handles `/v1` vs `/v1/chat/completions`.
 
-## What it is not yet
-- no model autodiscovery
-- no multi-model routing
-- no scheduling / queueing
-- no session persistence or context window management beyond a single request
-- no independent auth/security layer beyond your network boundary
+---
 
-## Requirements
-- Python 3.10+
-- `pip install mcp httpx`
-- a running KoboldCpp server exposing a chat-compatible HTTP endpoint
+## 🛠️ Installation (Step-by-Step)
 
-## Configuration
-Environment variables:
-- `KOBOLD_URL` — full endpoint URL; default: `http://localhost:5001/v1/chat/completions`
-- `KOBOLD_MODEL` — model label sent in the payload; default: `nemotron-cascade-2`
-- `KOBOLD_TIMEOUT` — request timeout in seconds; default: `180`
-- `KOBOLD_TEMPERATURE` — default temperature for `query_local_model`; default: `0.7`
-- `KOBOLD_MAX_TOKENS` — default max tokens for `query_local_model`; default: `4096`
+### 1. Host Machine (Windows RTX 3090)
+1. Run **[KoboldCPP v1.110](https://github.com/LostRuins/koboldcpp/releases/tag/v1.110)** or newer.
+2. Load your model (e.g., **[Nemotron-Cascade-2-30B IQ4_XS](https://huggingface.co/mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF/tree/main)**).
+3. **Crucial:** Ensure Kobold starts with `--corsorigin *` to allow browser-based dashboard access.
 
-If `KOBOLD_URL` is given as just `/v1`, the bridge normalizes it to `/v1/chat/completions`.
+### 2. Client Side Setup (e.g., in your local Repo)
+We recommend using a Virtual Environment to avoid dependency conflicts:
 
-### Example local setup
+```powershell
+# Create environment
+python -m venv venv
+
+# Install latest MCP & HTTTPX
+./venv/Scripts/pip.exe install mcp httpx
+```
+
+### 3. Integration into Antigravity
+Add this to your `mcp_config.json` (usually in `~/.gemini/antigravity/`):
+
 ```json
 "kobold-nemotron-bridge": {
-  "command": "python",
-  "args": ["E:/path/to/Kobold-Claw-Link-MCP/router.py"],
+  "command": "E:/Path/to/Kobold-Claw-Link-MCP/venv/Scripts/python.exe",
+  "args": ["E:/Path/to/Kobold-Claw-Link-MCP/router.py"],
   "env": {
-    "KOBOLD_URL": "http://localhost:5001/v1/chat/completions",
-    "KOBOLD_MODEL": "nemotron-cascade-2",
-    "KOBOLD_TIMEOUT": "180",
-    "KOBOLD_TEMPERATURE": "0.7",
-    "KOBOLD_MAX_TOKENS": "4096"
+    "KOBOLD_URL": "http://localhost:5001/v1",
+    "KOBOLD_MODEL": "nemotron-cascade-2-30B",
+    "KOBOLD_TIMEOUT": "180"
   }
 }
 ```
 
-### Example Tailscale setup
-```json
-"kobold-nemotron-bridge": {
-  "command": "python",
-  "args": ["/path/to/Kobold-Claw-Link-MCP/router.py"],
-  "env": {
-    "KOBOLD_URL": "http://100.x.y.z:5001/v1/chat/completions",
-    "KOBOLD_MODEL": "nemotron-cascade-2"
-  }
-}
-```
+---
 
-## Recommended operating model
-Use this bridge when:
-- you want private/local inference
-- the Windows RTX 3090 host is available
-- heavier background or browser-adjacent jobs should prefer the workhorse machine
+## 🖥️ Web Interface (Claw-Chat Dashboard)
+A sleek, glassmorphism-style web frontend is included in the `/frontend` directory for direct model interaction via browser.
 
-Do not pretend this bridge solves full routing yet.
-It currently just gives a cleaner connector surface.
+**To Launch:**
+1. Start a local server: `python -m http.server 8080 --directory frontend`
+2. Access at: **`http://localhost:8080`**
 
-## Acceptance criteria for this v1
-- bridge starts cleanly
-- `healthcheck` succeeds against the running KoboldCpp endpoint
-- `config_info` exposes the active config clearly
-- `query_local_model` works with the configured endpoint
-- `query_fast` and `query_deep` provide simple profile separation
-- errors are readable instead of opaque crashes
+---
 
-## Next sensible upgrades
-- model / server capability inspection
-- better response-shape tolerance across backends
-- structured diagnostic logging
-- optional retries for transient failures
-- real routing once multiple local targets or profiles matter
+## 🧬 Core Stack Reference
+- **Engine**: [KoboldCPP](https://github.com/LostRuins/koboldcpp)
+- **Model**: [Nemotron-Cascade-2-30B-A3B-GGUF](https://huggingface.co/mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF)
+- **SDK**: Built with the modern **FastMCP** (SDK 1.x) for better stability/type support.
+- **Reference**: Inspired by [this tutorial](https://www.youtube.com/watch?v=H0IYyERZUyo).
 
-## Web Interface (Internal Control Dashboard)
-You can now also chat with your 3090 directly via a beautiful browser interface.
-
-### Launching the Dashboard:
-1. Run a simple local server:
-   ```bash
-   python -m http.server 8080 --directory frontend
-   ```
-2. Open **`http://localhost:8080`** in your browser.
-
-*Note: Ensure KoboldCpp is started with `--corsorigin *` for the browser to communicate with the API.*
-
-## Core Stack Reference
-- **Engine**: [KoboldCPP v1.110](https://github.com/LostRuins/koboldcpp/releases/tag/v1.110)
-- **Model**: [mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF (IQ4_XS)](https://huggingface.co/mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF/tree/main)
-- **Original Inspiration**: [Expanding Antigravity LLM catalog with Local Models (YouTube)](https://www.youtube.com/watch?v=H0IYyERZUyo)
+*Created with ❤️ for high-performance agentic engineering.*
