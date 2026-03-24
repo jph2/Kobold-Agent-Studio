@@ -62,7 +62,7 @@
                 <strong style="color:var(--text-primary)">Temperature:</strong> Controls AI creativity (0.1 = strictly logical, 0.8+ = creative).<br>
                 <strong style="color:var(--text-primary)">Response Tokens:</strong> Exact maximum length of the bot's response.<br><br>
                 <strong style="color:#00d4ff">Web Search:</strong> Injects live internet snippets from DuckDuckGo into your chat context.<br>
-                <strong style="color:#76b900">NVIDIA USD Agent:</strong> Completely bypasses the local LLM and routes your prompt to the official NVIDIA NIM microservice for advanced USD (Universal Scene Description) scripts.
+                <strong style="color:#76b900">USD code NIM:</strong> The Local LLM queries NVIDIA's USDcode server in the background and integrates the massive generated USD scripts into its native local response.
             </div>
             
             <div class="config-item" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 8px;">
@@ -72,7 +72,7 @@
                 </label>
                 <label style="margin:0; display:flex; align-items:center; cursor:pointer; color: #76b900;">
                     <input type="checkbox" id="usd-agent-toggle" style="width:auto; margin-right: 8px;">
-                    Ask NVIDIA USD Agent 🟩
+                    Enable USD code NIM 🟩
                 </label>
             </div>
         </div>
