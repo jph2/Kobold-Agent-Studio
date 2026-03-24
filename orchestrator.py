@@ -160,21 +160,29 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
             import re
             
             try:
-                # Basic DDG html scrape to bypass heavy deps
-                url = "https://html.duckduckgo.com/html/?q=" + urllib.parse.quote(query)
-                req_obj = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+                # Basic DDG html scrape (using lite.duckduckgo.com) to bypass heavy deps
+                data = urllib.parse.urlencode({'q': query}).encode('utf-8')
+                req_obj = urllib.request.Request(
+                    'https://lite.duckduckgo.com/lite/',
+                    data=data,
+                    headers={
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                )
                 html = urllib.request.urlopen(req_obj, timeout=5).read().decode('utf-8')
                 
-                # Extract snippets
-                snippets = re.findall(r'<a class="result__snippet[^>]*>(.*?)</a>', html, re.IGNORECASE | re.DOTALL)
+                # Extract snippets (DDG uses single or double quotes for class names sometimes)
+                snippets = re.findall(r'class=[\'"]result-snippet[\'"][^>]*>(.*?)</td>', html, re.IGNORECASE | re.DOTALL)
                 
                 # Clean HTML tags from snippet
                 results = []
                 for s in snippets[:3]:
                     clean = re.sub('<[^<]+>', '', s).strip()
-                    results.append(clean)
+                    if clean:
+                        results.append(clean)
                     
-                context_str = " ".join(results)
+                context_str = " | ".join(results)
                 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
