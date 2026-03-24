@@ -181,7 +181,7 @@ function renderMessages() {
         const actions = document.createElement('div');
         actions.className = 'msg-actions';
         
-        let regenBtn = (msg.role === 'assistant') ? `<button class="action-btn" onclick="regenerateFrom(${index})">Regen 🎲</button>` : '';
+        let regenBtn = (msg.role === 'assistant') ? `<button class="action-btn" onclick="regenerateFrom(${index})">Regenerate 🎲</button>` : '';
         
         actions.innerHTML = `
             ${regenBtn}
