@@ -115,6 +115,69 @@ Optional environment variables:
 
 If you expose this beyond localhost, do it deliberately. Local-first is safer. Casual LAN exposure is sloppy.
 
+## MCP bridge and agent integration
+
+Yes, there is still an MCP bridge in this repo.
+
+It lives in:
+- `router.py`
+
+That bridge lets external systems connect to the local Kobold-compatible endpoint through a small MCP tool layer.
+
+Current MCP tools include:
+- `healthcheck`
+- `config_info`
+- `query_local_model`
+- `query_fast`
+- `query_deep`
+
+That means this project is not only a browser UI. It can also act as a local model service for agent systems, IDE workflows, and harnesses that know how to call MCP tools.
+
+### OpenClaw / IDE / harness use
+
+A practical pattern looks like this:
+- keep a frontier model as the main planner / coordinator
+- let that main system delegate selected tasks to local subagents
+- have those local subagents call this MCP bridge to run work on local hardware
+
+In plain language:
+- the big model plans
+- the local model executes narrower tasks
+- you save money and energy
+- more sensitive data can stay local
+
+### Minimal MCP setup idea
+
+1. Start your local Kobold backend so it serves an OpenAI-compatible endpoint.
+2. Set environment variables for the MCP bridge if needed:
+   - `KOBOLD_URL`
+   - `KOBOLD_MODEL`
+   - `KOBOLD_TIMEOUT`
+   - `KOBOLD_TEMPERATURE`
+   - `KOBOLD_MAX_TOKENS`
+3. Run the MCP bridge:
+
+```bash
+python router.py
+```
+
+4. Connect that MCP server from your IDE, OpenClaw setup, or other MCP-capable harness.
+
+### Using this from OpenClaw-style systems
+
+The practical role here is not to replace the main agent runtime.
+The practical role is to provide a **local execution surface**.
+
+So an OpenClaw-style setup can use this as:
+- a local subagent backend
+- a task-specific local model endpoint
+- a cheap worker for narrow jobs like drafting, extraction, classification, code transforms, or other bounded tasks
+
+The overall structure can be:
+- frontier model = planning, orchestration, decomposition
+- Kobold Agent Studio via MCP = local worker layer
+- IDE / harness = execution environment and tool routing
+
 ## Human use and agent use
 
 This project should work in two directions:
