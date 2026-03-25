@@ -115,6 +115,46 @@ A strong local machine gives you:
 - less compromise on quantization
 - a more useful standalone setup overall
 
+## Core dependencies and model catalog
+
+### Runtime location
+
+This setup expects the local runtime folder to live at:
+
+```text
+C:\Kobold-Agent-Studio_LOCAL
+```
+
+That folder is expected to contain at least:
+- `koboldcpp.exe`
+- the selected `.gguf` model files
+- chat history output in `Chat-History/`
+- any local runtime assets/configs you maintain outside the repo
+
+### Core dependency
+
+- **KoboldCpp (engine):** <https://github.com/LostRuins/koboldcpp>
+
+### Verified model links used in this setup
+
+- **Qwen2.5-Coder-7B**
+  - Repo: <https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF>
+  - Local file used here: `Qwen2.5-Coder-7B-Instruct-Q8.gguf`
+
+- **Llama-3.1-8B (Q8)**
+  - Repo: <https://huggingface.co/bartowski/Llama-3.1-8B-Instruct-GGUF>
+  - Local file used here: `Llama-3.1-8B-Instruct-Q8.gguf`
+
+- **Nemotron-Cascade-2-30B-A3B (IQ4_XS quant)**
+  - Repo: <https://huggingface.co/mradermacher/Nemotron-Cascade-2-30B-A3B-GGUF>
+  - Local file used here: `Nemotron-Cascade-2-30B-A3B.IQ4_XS.gguf`
+
+- **Nemotron-Mini-4B (Q8)**
+  - Repo: <https://huggingface.co/bartowski/Nemotron-Mini-4B-Instruct-GGUF>
+  - Local file used here: `Nemotron-Mini-4B-Instruct-Q8.gguf`
+
+This is the currently verified model set used by the Studio configuration in this repo.
+
 ## How to start
 
 1. Clone this repository.
