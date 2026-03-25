@@ -60,7 +60,7 @@ MODELS = {
         "speed": "Slow 🐢",
         "pros": "Absolute benchmark for coherent roleplay, deep nuances, and flawless long German.",
         "cons": "Heavy on the VRAM, slightly slower generation.",
-        "bat": "START_Nemotron-30B-32k.bat"
+        "bat": "START_Heavy_Nemotron-30B.bat"
     },
     "Speed_Nemo-Mini-4B": {
         "id": "Speed_Nemo-Mini-4B",
@@ -236,6 +236,10 @@ class OrchestratorHandler(SimpleHTTPRequestHandler):
 if __name__ == '__main__':
     port = 8080
     server = ThreadingSimpleServer(('0.0.0.0', port), OrchestratorHandler)
-    print(f"🚀 Kobold-Claw Orchestrator running on http://127.0.0.1:{port}")
+    print("="*60)
+    print(f"🚀 KOBOLD AGENT STUDIO ORCHESTRATOR")
+    print(f"📂 RUNNING FROM REPO DIRECTORY: {os.path.abspath(__file__)}")
+    print("="*60)
+    print(f"Server binding to http://0.0.0.0:{port}")
     print("Serving UI and Backend Models API. Press Ctrl+C to stop.")
     server.serve_forever()
