@@ -1,61 +1,132 @@
-# 🤖 Kobold Agent Studio
+# Kobold Agent Studio
 
-Welcome to **Kobold Agent Studio** (formerly Kobold-Claw-Link-MCP) – the ultimate local command center for autonomous AI agents and system power-users! 
+Kobold Agent Studio is a local AI control panel for people who want more independence.
 
-This project is tailored for high-end local systems (like the NVIDIA RTX 3090 with 24GB VRAM). It transforms a simple `koboldcpp` backend installation into a highly secure, dynamic "Multi-Brain" environment. It serves both as a dedicated routing server for autonomous MCP tasks (e.g., Cursor / OpenClaw) and as a standalone, powerful Chat Dashboard.
+The point is simple:
+- run useful models on your own machine
+- keep your chats and files local
+- switch between different local models depending on the job
+- avoid sending everything to frontier-model providers when you do not want to
 
----
+It is not magic. It is a practical local setup.
 
-## 🔥 Core Features
+## Why this exists
 
-* **🔌 KI Engine Hot-Swapping:** Seamlessly switch between specialized AI architectures with a single click in your browser (e.g., transition from deep *Nemotron-30B Reasoning* to massive *Qwen-7B Coder* repositories). The Python Orchestrator boots and unloads runtimes silently in the background.
-* **🌐 Web Search (RAG):** Built-in DuckDuckGo Lite integration that automatically scrapes HTML, parses URLs, and injects live internet data discretely into the AI's context window.
-* **🛡️ Global Kill Switch & Auto-Timeout:** A beautiful, glossy Double-Click safety switch to instantly purge 24GB of VRAM across the network. Includes a 15-minute background auto-shutdown daemon to free the GPU for other family members.
-* **📝 Persistent Markdown Memory:** Chat logs are continuously auto-saved to the backend's `Chat-History/` folder as structured `.md` files, perfectly replicating commercial "Memory" mechanics.
-* **🌍 Network-Aware Architecture:** The frontend dynamically resolves IPs, allowing you to access and command your local AI datacenter from any PC or smartphone on your home Wi-Fi.
-* **🧠 Memory Compression Protocol:** When a model's context capacity overflows before a transition, the application can distill your massive chat history into an *"Inherited Memory Briefing"* for the next model to ingest.
-* **🦾 Security & XSS Armor:** A fully hardened Web UI featuring DOM sanitizers against malicious script exploits from raw AI generations.
-* **🤖 Autonomous Agent Routing:** External agent frameworks (like Cursor or OpenClaw) can utilize the dedicated `SKILL.md` to instruct the Orchestrator autonomously.
-* **⚡ Native Context Overrides:** Bypasses native 8k training limits to cram massive **128,000 Token Windows** straight into the 24GB VRAM of a 3090 consumer card!
+A lot of AI tooling assumes you should always depend on online services. That is convenient, but it also means less control, less privacy, and more lock-in.
 
----
+This project takes the opposite direction:
+- your machine does the work
+- your data can stay on your machine
+- you decide which local model to run
+- you can keep using it as a standalone system
 
-## 🛠️ System Requirements
+That is a good direction for normal humans who want a bit more control over their tools.
 
-For a stable experience and full utilization of framework swapping, the following setup is required:
+## What it does
 
-* **OS:** Windows 10/11
-* **Runtime:** Python 3.10+
-* **Hardware (GPU):** An enthusiast-grade NVIDIA GPU (e.g., **RTX 3090 / 4090** with 24 GB VRAM) is highly recommended for maximizing pure reasoning across vast context boundaries.
-* **Backend Binaries:** The `koboldcpp.exe` executable. *Crucial: To ensure the launchers function properly, this file must be situated in the physical root directory `C:\Kobold-Agent-Studio_LOCAL\`.*
+Kobold Agent Studio gives you:
+- a browser-based local chat dashboard
+- model switching through a simple local orchestrator
+- local chat history saving
+- a basic bridge for agent-style workflows
+- optional web search context
 
----
+## Important honesty section
 
-## 🚀 The "Fantastic Four" Models
+The online search really sucks.
 
-Your command center comes out of the box tuned to orchestrate 4 specialized models. (These models must be identically named as `.gguf` files inside `C:\Kobold-Agent-Studio_LOCAL\`).
+Right now it is a fragile scrape of DuckDuckGo Lite. It is basic, brittle, and should not be treated as a serious research system. Sometimes it may help a little. Sometimes it will be noisy, incomplete, or just fail.
 
-1. **Qwen2.5 Coder 7B** `(Qwen2.5-Coder-7B-Instruct-Q8.gguf)`
-   - **128,000** Token Context | Brutally efficient for massive codebases and repositories.
-2. **Llama-3.1 8B** `(Llama-3.1-8B-Instruct-Q8.gguf)`
-   - **128,000** Token Context | The perfect generalist for deep document research.
-3. **Nemotron-Cascade 30B** `(Nemotron-Cascade-2-30B-A3B.IQ4_XS.gguf)`
-   - **24,576** Token Context | The dense "Reasoning" brain for complex logic tasks without hallucinations.
-4. **Nemotron-Mini 4B** `(Nemotron-Mini-4B-Instruct-Q8.gguf)`
-   - **4,096** Token Context | Lightning fast (Instant Latency) for simple RAG integrations and rudimentary queries.
+So the actual value of this project is **not** the web search.
 
----
+The actual value is that it works as a **standalone local AI station** that can give people more privacy, more control, and less dependence on frontier-model platforms.
 
-## ⚙️ Start Commands & Usage
+## Models
 
-The application manages itself once the orchestrator is active:
+The included setup is aimed at local GGUF-style workflows, but the bigger idea is broader than that.
 
-1. Clone or enter this repository:
-   ```bash
-   cd Kobold-Agent-Studio
-   ```
-2. Start the brain and Web UI:
-   ```bash
-   venv\Scripts\python.exe orchestrator.py
-   ```
-3. Open `http://localhost:8080/` in your web browser and command your own local AI datacenters!
+You can add other models too.
+
+And if you have stronger hardware, you are not limited to small quantized models. You can adapt this project for larger or higher-quality local setups as long as your machine can actually carry the load.
+
+So treat the included model list as a starting point, not as a hard limit.
+
+## Hardware expectations
+
+This project makes the most sense on a machine with a decent NVIDIA GPU and enough VRAM for local inference.
+
+A strong local machine gives you:
+- better model choices
+- better speed
+- less compromise on quantization
+- a more useful standalone setup overall
+
+## How to start
+
+1. Clone this repository.
+2. Make sure your local KoboldCpp setup and model files are configured the way you want.
+3. Start the orchestrator:
+
+```bash
+venv\Scripts\python.exe orchestrator.py
+```
+
+4. Open:
+
+```text
+http://localhost:8080/
+```
+
+## Security defaults
+
+The orchestrator now defaults to **localhost only**.
+
+Optional environment variables:
+- `KAS_BIND_HOST` — change the bind host if you intentionally want remote access
+- `KAS_PORT` — change the port (default `8080`)
+- `KAS_TOKEN` — required if you want to allow remote control requests to sensitive endpoints
+
+If you expose this beyond localhost, do it deliberately. Local-first is safer. Casual LAN exposure is sloppy.
+
+## What this project is good for
+
+- private local chatting
+- testing local model workflows
+- switching between specialized local models
+- basic local agent experiments
+- keeping more of your AI usage on your own hardware
+
+## What this project is not
+
+- not a polished enterprise platform
+- not a hardened security product
+- not a reliable web research stack
+- not a replacement for careful system administration
+
+## Contributing
+
+If you want to improve this project, contribute.
+
+Useful contribution areas:
+- make the setup clearer for non-technical users
+- improve model configuration and switching
+- replace the weak web search with something less flimsy
+- tighten security
+- improve file/path handling
+- improve the local UX
+
+Pull requests, cleanup, documentation improvements, and practical fixes are welcome.
+
+## Security note
+
+This is local-first software, but local does **not** automatically mean secure.
+
+If you expose it on your network, treat it like a tool that still needs hardening. Review the code, restrict access, and do not assume the current version is safe by default.
+
+## Final summary
+
+Kobold Agent Studio is worth keeping around because the core idea is good:
+
+**a standalone local AI control station that gives humans more privacy, more independence, and more control over their own machine.**
+
+The web search is weak. The project still has rough edges. But the direction is solid.
