@@ -59,6 +59,9 @@ It can also serve as a local execution layer for:
 
 If you want details, jump to [MCP bridge and agent integration](#mcp-bridge-and-agent-integration).
 
+If you want an autonomous agent to bootstrap or repair the setup, use the dedicated runbook at:
+- `Skills/Agent_Setup/SKILL.md`
+
 ## What it does
 
 Kobold Agent Studio gives you:
