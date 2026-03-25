@@ -1,6 +1,6 @@
 # Kobold Agent Studio
 
-Kobold Agent Studio is a local AI control panel for people who want more independence.
+Kobold Agent Studio is a local AI control panel and MCP-connected local model layer for people who want more independence.
 
 The point is simple:
 - run useful models on your own machine
@@ -8,6 +8,7 @@ The point is simple:
 - switch between different local models depending on the job
 - avoid sending everything to frontier-model providers when you do not want to
 - run local agents efficiently for specific tasks
+- connect those local agents to IDEs, OpenClaw, or other MCP-capable systems
 
 It is not magic. It is a practical local setup.
 
@@ -25,12 +26,38 @@ That is a good direction for normal humans who want a bit more control over thei
 
 It is also a good direction for agentic systems.
 
-A useful pattern now is:
-- a frontier model acts as the main planning and structuring system
-- smaller local models handle narrower tasks on local hardware
+Local inference matters because modern smaller models have become genuinely useful on personal hardware for selected tasks.
+
+That means a very practical architecture is now possible:
+- a frontier model does the planning, structuring, decomposition, and instruction-writing
+- smaller local models execute narrower tasks on your own machine
 - the overall system becomes cheaper, more energy-efficient, and often more privacy-compliant
 
 That is one of the main reasons this project matters.
+
+And yes, if you are pushing enough local inference, the waste heat can at least pretend to be a feature. In winter, your model stack may be doing both reasoning and light home heating.
+
+## Browser UI first, MCP second, both useful
+
+This project is useful in two very direct ways.
+
+### 1. Your own local chat
+You can use it as a standalone local chat station:
+- open the browser UI
+- switch between local models
+- keep more work on your own hardware
+- reduce how much of your work gets sent to external providers
+
+### 2. MCP bridge for agents and IDEs
+This repo also includes an MCP bridge.
+That means it is not just a browser UI.
+It can also serve as a local execution layer for:
+- OpenClaw
+- IDE integrations
+- local harnesses
+- broader agent systems that can call MCP tools
+
+If you want details, jump to [MCP bridge and agent integration](#mcp-bridge-and-agent-integration).
 
 ## What it does
 
@@ -38,7 +65,7 @@ Kobold Agent Studio gives you:
 - a browser-based local chat dashboard
 - model switching through a simple local orchestrator
 - local chat history saving
-- a basic bridge for agent-style workflows
+- an MCP bridge for agent-style workflows
 - optional web search context
 - a practical way to run local helper agents for selected tasks
 
@@ -117,7 +144,7 @@ If you expose this beyond localhost, do it deliberately. Local-first is safer. C
 
 ## MCP bridge and agent integration
 
-Yes, there is still an MCP bridge in this repo.
+This repo includes an MCP bridge.
 
 It lives in:
 - `router.py`
